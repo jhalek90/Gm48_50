@@ -41,6 +41,39 @@ function shadow_ellipse(_cx, _cy, _rx, _ry, _colour, _alpha) {
 	draw_set_alpha(1);
 }
 
+/// A shadow running down the screen from something standing at _x.
+///
+/// The lean, the width and the strength all lerp from the near end to the far
+/// end. The first two are what make a band of shadow read as lying along a
+/// surface receding away from the thing that cast it rather than as a rectangle
+/// painted on it; _taper is what keeps it from reading as a hard graphic stripe.
+///
+/// A shadow is sharpest against the thing that cast it and dissolves the
+/// further it gets, because the light source has width. Holding one strength
+/// the whole way is the single thing that makes a cast shadow look pasted on.
+function shadow_stripe(_x, _y0, _y1, _w0, _w1, _dx0, _dx1, _colour, _alpha, _taper) {
+	if (_alpha <= 0.01) exit;
+
+	var _px = max(1, gmlmcp_tunable("shadow_pixel", 4));
+
+	draw_set_colour(_colour);
+
+	var _a = floor(_y0 / _px) * _px;
+	var _b = ceil(_y1 / _px) * _px;
+
+	for (var _y = _a; _y < _b; _y += _px) {
+		var _t  = clamp((_y + _px * 0.5 - _y0) / max(_y1 - _y0, 1), 0, 1);
+		var _cx = _x + lerp(_dx0, _dx1, _t);
+		var _hw = lerp(_w0, _w1, _t) * 0.5;
+
+		draw_set_alpha(_alpha * lerp(1, _taper, _t));
+		draw_rectangle(floor((_cx - _hw) / _px) * _px, _y,
+		               ceil((_cx + _hw) / _px) * _px, _y + _px, false);
+	}
+
+	draw_set_alpha(1);
+}
+
 /// Drop a shadow from something of width _size standing at _x on row _base_y.
 ///
 /// The shadow leans away from the key light and stretches as the light drops

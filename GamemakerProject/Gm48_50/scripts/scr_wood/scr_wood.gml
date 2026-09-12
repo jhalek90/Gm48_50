@@ -29,6 +29,7 @@ function wood_init() {
 		relief: shader_get_uniform(shd_wood, "u_relief"),
 		light:  shader_get_uniform(shd_wood, "u_light"),
 		key:    shader_get_uniform(shd_wood, "u_key"),
+		wet:    shader_get_uniform(shd_wood, "u_wet"),
 	};
 }
 
@@ -50,6 +51,7 @@ function wood_begin() {
 	var _l = global.light;
 	shader_set_uniform_f_array(_u.light, [_l.x, _l.y]);
 	shader_set_uniform_f(_u.key, 0.4 + 0.6 * _l.strength);
+	shader_set_uniform_f(_u.wet, gmlmcp_tunable("wood_wet", 0.6));
 
 	// Drawn white: the shader multiplies by the vertex colour, so anything else
 	// here would tint the palette tone it was just handed.

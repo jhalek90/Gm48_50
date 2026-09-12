@@ -2,7 +2,6 @@ var _cell = seq_cell_at(mouse_x, mouse_y);
 // Distance hazes toward the water behind it, so the far ledges recede into
 // whatever colour the lake is at this hour instead of a fixed dusk blue.
 var _haze = global.pal.water;
-var _near_z = global.tracks[0].z;
 
 // Back to front, so a nearer ledge overlaps the one behind it.
 for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
@@ -10,10 +9,10 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 	var _half = _k.size * 0.5;
 	var _top = _k.y - _k.size;
 
-	// Distance washes things out. The same aerial perspective the rain uses,
-	// so an object on the back ledge belongs to the same scene as the rain
-	// falling past it rather than sitting on top of the picture.
-	var _fade = clamp((_k.z - _near_z) / 2.5, 0, 0.45);
+	// Distance washes things out, on the shared curve, so an object on the
+	// back ledge belongs to the same scene as the trees and the rain behind it
+	// rather than sitting on top of the picture.
+	var _fade = aerial_fade(_k.z, 0.45);
 
 	// Placeholder ledge. Track 0 is the porch railing, which obj_porch draws.
 	if (_t > 0) {

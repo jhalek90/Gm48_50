@@ -96,7 +96,12 @@ function trees_draw() {
 	// multiplied through the ambient light instead of being recoloured. One
 	// sprite then serves every hour of the day.
 	var _tint = global.pal.light;
-	var _sway = gmlmcp_tunable("tree_sway",  8);
+
+	// What the trees are standing against, and so what distance washes them
+	// toward. The lake, because that is what is behind every one of them.
+	var _fog  = global.pal.water;
+
+	var _sway = gmlmcp_tunable("tree_sway",  8) * (0.6 + 0.7 * wind_strength());
 	var _size = gmlmcp_tunable("tree_scale", 1.0);
 	var _list = global.trees;
 
@@ -115,6 +120,23 @@ function trees_draw() {
 
 		// The sprites are all bottom-centre origin, so the ground row from the
 		// projection is the draw position with no offset to remember.
-		draw_sprite_ext(_t.spr, _f, _t.x, ground_y(_t.z), _s, _s, 0, _tint, 1);
+		var _y = ground_y(_t.z);
+		draw_sprite_ext(_t.spr, _f, _t.x, _y, _s, _s, 0, _tint, 1);
+
+		// Then the air in front of it: the same sprite and frame, filled flat
+		// with the colour of the lake behind, at the strength its depth calls
+		// for. Until now the trees were the one thing in the scene not taking
+		// part in aerial perspective, so a tree at 2.5 and one at 1.15 were
+		// separated by size alone.
+		//
+		// It needs shd_flat rather than a blend colour because a blend colour
+		// multiplies: it can only darken a distant tree, and haze washes things
+		// toward the background rather than dimming them.
+		var _fade = aerial_fade(_t.z, 0.45) * gmlmcp_tunable("tree_haze", 1.0);
+		if (_fade > 0.01) {
+			shader_set(shd_flat);
+			draw_sprite_ext(_t.spr, _f, _t.x, _y, _s, _s, 0, _fog, _fade);
+			shader_reset();
+		}
 	}
 }

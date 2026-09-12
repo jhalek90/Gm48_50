@@ -58,3 +58,34 @@ wood_piece(0, 660, room_width, room_height, merge_colour(_wood_dark, _wood, 0.35
 	GRAIN_ALONG_X, 24, 167);
 
 wood_end();
+
+// --- What the railing throws at your feet ---------------------------------
+//
+// The sun crosses the sky on the far side of the lake and never leaves the
+// view, so the porch is backlit at every hour of the cycle. Its shadows fall
+// toward the viewer, onto the deck — they can never reach out onto the bank,
+// which is where a porch scene usually wants them. That is what the projection
+// says, and arguing with it would mean lighting the railing from a second sun.
+//
+// Drawn after the timber so it lies on the boards, and started below the
+// bottom rail: above that the balusters are in the way and there is nothing to
+// catch it.
+var _l = global.light;
+if (_l.strength > 0.02) {
+	var _alt  = clamp(_l.alt, 0, 1);
+	var _lean = (1 - _alt) * gmlmcp_tunable("shadow_lean", 0.85);
+	var _a    = gmlmcp_tunable("rail_shadow", 0.13) * (0.3 + 0.7 * _l.strength);
+
+	for (var _sx = 60; _sx < room_width; _sx += 78) {
+		var _cx  = _sx + 8;
+		var _dir = (_cx >= _l.x) ? 1 : -1;
+
+		// Wider and further over at the near end, because the deck there is
+		// closer to the viewer than the rail that cast it and the same shadow
+		// covers more of it. Faded almost out by the near end as well: at full
+		// strength the whole way these read as a bold graphic pattern painted
+		// across the deck rather than as light coming through a railing.
+		shadow_stripe(_cx, 618, room_height, 16, 24,
+			_dir * 10 * _lean, _dir * 56 * _lean, c_black, _a, 0.15);
+	}
+}

@@ -44,6 +44,10 @@ if (!paused && !dragging) {
 // the palette and they all have to be looking at the same instant.
 daylight_apply();
 
+// The gust, advanced once alongside the palette so the rain, the grass and the
+// trees are all leaning on the same instant of the same wind.
+wind_step();
+
 // The scene's key light, resolved once alongside the palette. The porch, the
 // shadows and the light shafts all read this, and they have to be lit from the
 // same instant the colours were blended for.

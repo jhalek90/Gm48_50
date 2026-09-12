@@ -46,6 +46,46 @@ function colour_vec3(_c) {
 	];
 }
 
+/// Reflect a bottom-origin sprite into the water below the horizon.
+///
+/// Only things standing BEYOND the water reflect into it. A mirror lying in a
+/// receding plane throws its image toward the viewer from the waterline, so
+/// something on the near bank would reflect onto the bank rather than into the
+/// lake. That is why the far range reflects and the trees standing in front of
+/// it do not, and it is geometry rather than a choice.
+///
+/// Drawn as strips rather than as one flipped sprite, because the image has to
+/// lose strength as it comes toward the viewer and has to wander with the
+/// surface it is lying on. One flipped draw is a mirror, and water is not.
+function water_reflect(_spr, _x, _horizon, _colour, _alpha) {
+	var _w    = sprite_get_width(_spr);
+	var _sh   = sprite_get_height(_spr);
+	var _step = max(2, gmlmcp_tunable("reflect_step",    8));
+	var _wob  = gmlmcp_tunable("reflect_wobble",  3.5);
+	var _fall = gmlmcp_tunable("reflect_falloff", 0.88);
+
+	for (var _s = 0; _s < _sh; _s += _step) {
+		// Sprite row _s sits (_sh - _s) above the horizon, so its reflection
+		// sits the same distance below it.
+		var _up = _sh - _s;
+		var _y  = _horizon + _up;
+
+		// 0 at the horizon, 1 at the near end. Reflections fade as they come
+		// toward the viewer: more of the surface between you and the image is
+		// scattering, and at a grazing angle almost none of it is a mirror.
+		var _t = _up / _sh;
+		var _a = _alpha * (1 - _fall * _t);
+		if (_a <= 0.01) continue;
+
+		// The surface is not flat, so the image is not straight. Driven by the
+		// same clock the waves are, so the wobble and the water agree about
+		// which way the lake is moving.
+		var _dx = sin(global.water_time * 1.7 + _s * 0.09) * _wob * (0.35 + _t);
+
+		draw_sprite_part_ext(_spr, 0, 0, _s, _w, _step, _x + _dx, _y, 1, -1, _colour, _a);
+	}
+}
+
 /// Draw the lake between two screen rows.
 function water_draw(_y1, _y2) {
 	// Real elapsed time, like every other clock in the project, so the waves

@@ -31,7 +31,7 @@ rain_bed_update();
 
 var _want  = gmlmcp_tunable("rain_count", 2000);
 var _speed = gmlmcp_tunable("rain_speed", 30);
-var _wind  = gmlmcp_tunable("rain_wind",  -4);
+var _wind  = gmlmcp_tunable("rain_wind",  -4) * (0.35 + 0.9 * wind_strength());
 var _life  = gmlmcp_tunable("splash_life", 18);
 var _rate  = gmlmcp_tunable("audio_rate", 14);
 

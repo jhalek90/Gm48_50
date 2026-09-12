@@ -24,6 +24,13 @@ draw_sprite_ext(spr_mountains, 0, 0, _h, 1, 1, 0, global.pal.shore, 1);
 // shader is handed the same two palette colours this event would have used.
 water_draw(_h, room_height);
 
+// The range, reflected. Drawn onto the lake rather than into it, so the wave
+// bands the shader just laid down show through the image the way they would on
+// real water.
+water_reflect(spr_mountains, 0, _h,
+	merge_colour(global.pal.shore, global.pal.water, 0.55),
+	gmlmcp_tunable("reflect_alpha", 0.45));
+
 // The near bank, where the closest rain lands. The flat rectangle this used to
 // be is now shd_grass: the rectangle is still under there as soil, with blades
 // standing up out of it. They are allowed to reach above the waterline, which

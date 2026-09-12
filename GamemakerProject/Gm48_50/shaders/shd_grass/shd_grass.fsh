@@ -48,6 +48,12 @@ uniform float u_wind_amp; // lean, as a fraction of blade spacing
 uniform float u_wind_freq;// gust wavelength across the field
 uniform float u_wind_speed;
 
+// The shared gust, from scr_wind. The travelling wave below still gives each
+// part of the field its own timing; this says how hard the whole bank is being
+// pushed at this instant, so a gust crosses the grass, the rain and the trees
+// together instead of the grass keeping its own private weather.
+uniform float u_gust;
+
 float hash(vec2 p)
 {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -136,7 +142,7 @@ void main()
 					// Lean measured in column widths. A fraction of a column reads as
 					// a shiver rather than as wind, and this number is what the
 					// column span above has to be kept in step with.
-					float lean = clamp(gust * env * u_wind_amp, -1.5, 1.5) * colw;
+					float lean = clamp(gust * env * u_wind_amp * u_gust, -1.5, 1.5) * colw;
 
 					// Quadratic in t: a blade is stiff at the root and gives at
 					// the tip, which is the difference between grass bending and

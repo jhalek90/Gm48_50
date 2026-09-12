@@ -6,6 +6,7 @@
 depth = -200;
 
 daylight_init();
+wind_init();
 
 dragging = false;
 show_ui  = true;

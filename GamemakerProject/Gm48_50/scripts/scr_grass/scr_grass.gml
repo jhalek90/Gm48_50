@@ -25,6 +25,7 @@ function grass_init() {
 		wind_amp:   shader_get_uniform(shd_grass, "u_wind_amp"),
 		wind_freq:  shader_get_uniform(shd_grass, "u_wind_freq"),
 		wind_speed: shader_get_uniform(shd_grass, "u_wind_speed"),
+		gust:       shader_get_uniform(shd_grass, "u_gust"),
 	};
 
 	// Started at zero rather than read off current_time, for the reason the
@@ -91,6 +92,11 @@ function grass_draw(_edge_z) {
 	shader_set_uniform_f(_u.wind_amp,   gmlmcp_tunable("wind_amp",   1.2));
 	shader_set_uniform_f(_u.wind_freq,  gmlmcp_tunable("wind_freq",  0.015));
 	shader_set_uniform_f(_u.wind_speed, gmlmcp_tunable("wind_speed", 0.9));
+
+	// How hard the shared gust is blowing right now. Floored well above zero so
+	// the bank never goes completely still: grass in a rainstorm is never
+	// standing to attention, and a field that stops dead reads as broken.
+	shader_set_uniform_f(_u.gust, 0.45 + 0.8 * wind_strength());
 
 	// Started above the waterline so blades rooted on the front row can stand
 	// proud of it. The shader leaves everything above the line transparent

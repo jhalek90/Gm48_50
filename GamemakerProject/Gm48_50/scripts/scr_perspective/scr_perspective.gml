@@ -37,6 +37,19 @@ function cloud_y(_z) {
 	return global.persp_horizon - global.persp_cloud_k / _z;
 }
 
+/// How far a thing at depth _z has washed out into the air in front of it.
+///
+/// One curve, shared. The ledges, the trees and anything added later have to
+/// agree about what distance does to a colour, or the scene ends up holding
+/// several different opinions about how far away the far shore is.
+///
+/// Measured from the railing rather than from the near plane, because the rail
+/// is the depth the viewer is sitting at and so the thing that reads as having
+/// no air in front of it at all.
+function aerial_fade(_z, _max) {
+	return clamp((_z - RAIL_Z) / 2.5, 0, _max);
+}
+
 /// Apparent size of anything at depth z. 1.0 at the railing, smaller beyond.
 function persp_scale(_z) {
 	return global.persp_z_near / _z;

@@ -35,6 +35,12 @@ uniform float u_relief; // lit edge strength
 uniform vec2  u_light;
 uniform float u_key;
 
+// How wet the timber is. Water fills the grain so less light scatters back out
+// of the body of the board, and what does come back reflects off the surface
+// film in a narrow band instead of across the whole face. Darker and sharper,
+// not brighter.
+uniform float u_wet;
+
 float hash(vec2 p)
 {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -126,6 +132,14 @@ void main()
 
 	float edge = pow(1.0 - clamp(from_lit / span, 0.0, 1.0), 2.5);
 	tone += u_relief * u_key * (edge - 0.22);
+
+	// Rain only reaches the upward faces. A post catches a fraction of what the
+	// top of a rail does, which is the difference between wet timber and timber
+	// that merely happens to be standing in the rain.
+	float wet = u_wet * (1.0 - u_dir * 0.6);
+
+	tone *= 1.0 - 0.10 * wet;
+	tone += wet * 0.45 * pow(edge, 6.0) * u_key;
 
 	// Quantise the finished tone too, so the shading lands on the same handful
 	// of steps as the grain instead of sliding smoothly underneath it.

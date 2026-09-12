@@ -11,7 +11,7 @@
 /// met and stroked afterwards. Walking the field a second time to find them
 /// cost about ten frames a second in a heavy downpour.
 var _speed  = gmlmcp_tunable("rain_speed", 30);
-var _wind   = gmlmcp_tunable("rain_wind",  -4);
+var _wind   = gmlmcp_tunable("rain_wind",  -4) * (0.35 + 0.9 * wind_strength());
 var _streak = gmlmcp_tunable("rain_streak", 62);
 var _a_near = gmlmcp_tunable("rain_alpha_near", 0.80);
 var _a_far  = gmlmcp_tunable("rain_alpha_far",  0.24);
