@@ -14,8 +14,15 @@ global.persp_ground_k  = 520;
 global.persp_cloud_k   = 900;
 global.persp_z_near    = 1.7;
 global.persp_z_far     = 36;
-global.rain_depth_bias = 0.6;
+global.rain_depth_bias = 1.0;
 global.rain_splashes   = [];
+
+// --- Audio ----------------------------------------------------------------
+global.rain_audio_gain  = 0.55;
+global.rain_audio_pan   = 0.55;
+global.rain_audio_depth = 34;
+global.rain_audio_reach = 1.4;
+rain_audio_init();
 
 // --- Surfaces that catch rain --------------------------------------------
 // The railing occupies a thin slice of depth, so only the drops inside that

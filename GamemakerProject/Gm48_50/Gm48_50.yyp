@@ -9,7 +9,7 @@
     "name":"Default",
   },
   "defaultScriptType":1,
-  "Folders":[{"$GMFolder":"","%Name":"GmlMcp","folderPath":"folders/GmlMcp.yy","name":"GmlMcp","resourceType":"GMFolder","resourceVersion":"2.0",},{"$GMFolder":"","%Name":"Scene","folderPath":"folders/Scene.yy","name":"Scene","resourceType":"GMFolder","resourceVersion":"2.0",},],
+  "Folders":[{"$GMFolder":"","%Name":"Audio","folderPath":"folders/Audio.yy","name":"Audio","resourceType":"GMFolder","resourceVersion":"2.0",},{"$GMFolder":"","%Name":"GmlMcp","folderPath":"folders/GmlMcp.yy","name":"GmlMcp","resourceType":"GMFolder","resourceVersion":"2.0",},{"$GMFolder":"","%Name":"Scene","folderPath":"folders/Scene.yy","name":"Scene","resourceType":"GMFolder","resourceVersion":"2.0",},],
   "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[],
   "isEcma":false,
@@ -19,6 +19,8 @@
   },
   "name":"Gm48_50",
   "resources":[
+    {"id":{"name":"scr_rain_audio","path":"scripts/scr_rain_audio/scr_rain_audio.yy",},},
+    {"id":{"name":"snd_drop","path":"sounds/snd_drop/snd_drop.yy",},},
     {"id":{"name":"obj_gmlmcp_bridge","path":"objects/obj_gmlmcp_bridge/obj_gmlmcp_bridge.yy",},},
     {"id":{"name":"obj_porch","path":"objects/obj_porch/obj_porch.yy",},},
     {"id":{"name":"obj_rain","path":"objects/obj_rain/obj_rain.yy",},},

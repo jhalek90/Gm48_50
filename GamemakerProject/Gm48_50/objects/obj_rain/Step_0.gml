@@ -10,10 +10,21 @@ global.persp_z_near    = gmlmcp_tunable("z_near",      1.7);
 global.persp_z_far     = gmlmcp_tunable("z_far",       36);
 global.rain_depth_bias = gmlmcp_tunable("depth_bias",  1.0);
 
+global.rain_audio_gain  = gmlmcp_tunable("audio_gain",  0.55);
+global.rain_audio_pan   = gmlmcp_tunable("audio_pan",   0.55);
+global.rain_audio_depth = gmlmcp_tunable("audio_depth", 34);
+global.rain_audio_reach = gmlmcp_tunable("audio_reach", 1.4);
+
 var _want  = gmlmcp_tunable("rain_count", 2000);
 var _speed = gmlmcp_tunable("rain_speed", 30);
 var _wind  = gmlmcp_tunable("rain_wind",  -4);
 var _life  = gmlmcp_tunable("splash_life", 18);
+var _rate  = gmlmcp_tunable("audio_rate", 14);
+
+// Voices are earned over time, not per frame, so the plinks stay evenly spread
+// instead of arriving in a clump every time a frame happens to land many drops.
+// The cap allows a short burst without letting a quiet spell bank a flurry.
+global.rain_voice_budget = min(global.rain_voice_budget + _rate / game_get_speed(gamespeed_fps), 4);
 
 // Match the field to the live count, seeding new drops mid-fall so turning the
 // rain up does not show as a visible band of drops entering together.
@@ -31,6 +42,7 @@ for (var _i = 0, _n = array_length(drops); _i < _n; _i++) {
 
 	if (_d.y >= _d.land) {
 		rain_add_splash(_d.x, _d.land, _s, _d.kind);
+		rain_audio_hit(_d.x, _d.land, _d.z, _s, _d.kind);
 		drops[_i] = rain_new_drop(false);
 	}
 }
