@@ -106,6 +106,54 @@ function sky_moon() {
 	return sky_body((sky_hour() + 12) mod 24);
 }
 
+/// Where the light in this scene comes from, and how strong a key it is.
+///
+/// One answer, shared. The sky shades its clouds with it, the porch turns its
+/// lit edges toward it, the trees and the instruments drop their shadows away
+/// from it, and the post pass throws its shafts out of it. Four consumers each
+/// working from a private copy of where the sun is, is how a scene ends up lit
+/// from two directions at once and nobody can say which one is wrong.
+///
+/// Cached into global.light once per step by obj_daylight, next to the palette
+/// and for the same reason: everything drawing this frame has to be looking at
+/// the same instant.
+function sky_light() {
+	var _sun  = sky_sun();
+	var _moon = sky_moon();
+
+	// The moon is a key too, but a far weaker one. Shadows at night want to be
+	// present and soft rather than absent, which is what the second weight is
+	// for.
+	var _sw = _sun.vis;
+	var _mw = _moon.vis * 0.3;
+
+	// Position comes from whichever body is actually lighting the scene, not
+	// from an average of the two.
+	//
+	// Averaging reads as the careful thing to do and is wrong. At dawn the two
+	// bodies sit at opposite ends of the sky, so the blend lands in the middle
+	// — the one place neither light is — and everything downstream is lit from
+	// a sun that is not there. It showed up as the porch posts refusing to
+	// change which side they caught, all the way through sunrise.
+	//
+	// The handover is a jump. That is fine: it happens when both bodies are on
+	// the horizon and the key is at its weakest, so there is nothing to see.
+	var _b = (_sw >= _mw) ? _sun : _moon;
+
+	return {
+		x: _b.x,
+		y: _b.y,
+
+		strength: max(_sw, _mw),
+
+		// Altitude of whichever body is up, for shadow length. Only one of them
+		// is ever above the horizon, so the larger is the one that matters.
+		alt: max(_sun.alt, _moon.alt),
+
+		sun_vis: _sun.vis,
+	};
+}
+
 /// Draw the sky between two screen rows.
 function sky_draw(_y1, _y2) {
 	// Real elapsed time, like every other clock in the project, so the cloud
@@ -139,14 +187,10 @@ function sky_draw(_y1, _y2) {
 	shader_set_uniform_f(_u.moon_r, gmlmcp_tunable("moon_size", 20));
 	shader_set_uniform_f(_u.glow,   gmlmcp_tunable("sky_glow",   4));
 
-	// Whichever body is up lights the cloud. Crossfaded on the sun's own
-	// visibility, so at dawn — with both of them sitting on the horizon at
-	// opposite ends of the sky — the shadows swing across rather than snapping
-	// from one side to the other on a single frame.
-	shader_set_uniform_f_array(_u.light, [
-		lerp(_moon.x, _sun.x, _sun.vis),
-		lerp(_moon.y, _sun.y, _sun.vis),
-	]);
+	// Whichever body is up lights the cloud, from the one shared answer rather
+	// than from a copy of the crossfade kept here.
+	var _l = sky_light();
+	shader_set_uniform_f_array(_u.light, [_l.x, _l.y]);
 
 	shader_set_uniform_f(_u.pixel,     max(1, gmlmcp_tunable("sky_pixel",   4)));
 	shader_set_uniform_f(_u.levels,    max(2, gmlmcp_tunable("sky_levels",  5)));

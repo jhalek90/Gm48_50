@@ -44,5 +44,10 @@ if (!paused && !dragging) {
 // the palette and they all have to be looking at the same instant.
 daylight_apply();
 
+// The scene's key light, resolved once alongside the palette. The porch, the
+// shadows and the light shafts all read this, and they have to be lit from the
+// same instant the colours were blended for.
+global.light = sky_light();
+
 global.gmlmcp_tunables[$ "time_of_day"] = global.day_t;
 sent = global.day_t;

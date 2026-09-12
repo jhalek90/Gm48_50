@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"shd_wood",
+  "name":"shd_wood",
+  "parent":{
+    "name":"Scene",
+    "path":"folders/Scene.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

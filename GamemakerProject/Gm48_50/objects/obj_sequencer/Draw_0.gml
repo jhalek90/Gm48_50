@@ -50,6 +50,12 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 		var _lift = _f * 7 * (1 - _fade);
 		var _col = merge_colour(_d.colour, _haze, _fade);
 
+		// Contact shadow on the ledge. Cast from the ledge row rather than from
+		// the object, so a struck instrument lifts off its own shadow instead
+		// of dragging it up with it, and the shadow tightens as it rises.
+		shadow_cast(_x, _k.y, _k.size * 1.15, c_black,
+			(1 - _fade) * (1 - _f * 0.45));
+
 		draw_set_alpha(1);
 		draw_set_colour(merge_colour(_col, c_white, _f * 0.65));
 		draw_rectangle(_x - _half, _top - _lift, _x + _half, _k.y - _lift, false);

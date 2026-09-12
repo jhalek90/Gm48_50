@@ -30,6 +30,9 @@ water_draw(_h, room_height);
 // is what makes the bank meet the lake as a ragged edge rather than a ruled one.
 grass_draw(BANK_Z);
 
+// What the stand throws on the bank, before the stand itself.
+trees_shadows();
+
 // The trees on that bank. After the grass so they stand in it rather than
 // behind it, and inside this event so the rain object still falls in front.
 trees_draw();

@@ -13,4 +13,10 @@
 application_surface_draw_enable(false);
 
 // Looked up once, not per frame.
-u_levels = shader_get_uniform(shd_post, "u_levels");
+u_levels      = shader_get_uniform(shd_post, "u_levels");
+u_light       = shader_get_uniform(shd_post, "u_light");
+u_ray         = shader_get_uniform(shd_post, "u_ray");
+u_ray_density = shader_get_uniform(shd_post, "u_ray_density");
+u_ray_decay   = shader_get_uniform(shd_post, "u_ray_decay");
+u_ray_weight  = shader_get_uniform(shd_post, "u_ray_weight");
+u_ray_thresh  = shader_get_uniform(shd_post, "u_ray_thresh");

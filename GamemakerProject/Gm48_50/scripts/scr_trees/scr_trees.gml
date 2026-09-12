@@ -66,6 +66,26 @@ function trees_init() {
 	global.trees_time = 0;
 }
 
+/// The shadows the stand drops on the bank.
+///
+/// Drawn after the grass and before the trees themselves, so a tree stands in
+/// its own shadow rather than on top of it.
+function trees_shadows() {
+	// Darkened grass rather than black. A shadow is the ground with less light
+	// on it, and painting it neutral is what makes shadows read as holes.
+	var _col  = merge_colour(global.pal.grass, c_black, 0.62);
+	var _size = gmlmcp_tunable("tree_scale", 1.0);
+	var _list = global.trees;
+
+	for (var _i = 0; _i < array_length(_list); _i++) {
+		var _t = _list[_i];
+
+		// These canopies are about as wide as they are tall, so the crown
+		// doubles as the width and there is no second number to keep in step.
+		shadow_cast(_t.x, ground_y(_t.z), _t.crown * persp_scale(_t.z) * _size, _col, 1);
+	}
+}
+
 /// Draw the stand.
 function trees_draw() {
 	// Real elapsed time, like every other clock here, so the sway does not

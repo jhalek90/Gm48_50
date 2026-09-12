@@ -25,6 +25,8 @@
   },
   "name":"Gm48_50",
   "resources":[
+    {"id":{"name":"scr_shadow","path":"scripts/scr_shadow/scr_shadow.yy",},},
+    {"id":{"name":"scr_wood","path":"scripts/scr_wood/scr_wood.yy",},},
     {"id":{"name":"spr_mountains","path":"sprites/spr_mountains/spr_mountains.yy",},},
     {"id":{"name":"obj_daylight","path":"objects/obj_daylight/obj_daylight.yy",},},
     {"id":{"name":"obj_gmlmcp_bridge","path":"objects/obj_gmlmcp_bridge/obj_gmlmcp_bridge.yy",},},
@@ -48,6 +50,7 @@
     {"id":{"name":"scr_trees","path":"scripts/scr_trees/scr_trees.yy",},},
     {"id":{"name":"scr_water","path":"scripts/scr_water/scr_water.yy",},},
     {"id":{"name":"shd_post","path":"shaders/shd_post/shd_post.yy",},},
+    {"id":{"name":"shd_wood","path":"shaders/shd_wood/shd_wood.yy",},},
     {"id":{"name":"shd_grass","path":"shaders/shd_grass/shd_grass.yy",},},
     {"id":{"name":"shd_sky","path":"shaders/shd_sky/shd_sky.yy",},},
     {"id":{"name":"shd_water","path":"shaders/shd_water/shd_water.yy",},},

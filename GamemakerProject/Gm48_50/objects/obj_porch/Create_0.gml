@@ -4,3 +4,6 @@
 /// what makes the view read as sheltered, and it is the edge the drips will
 /// eventually fall from.
 depth = -100;
+
+// Uniform handles for the timber, looked up once.
+wood_init();
