@@ -33,6 +33,12 @@ function rain_audio_init() {
 
 /// A drop has landed. Decide whether it is one of the ones you hear.
 function rain_audio_hit(_x, _y, _z, _scale, _kind) {
+	// TEMP: individual drop hits are off while the bed is judged on its own.
+	// Returning before the budget is spent rather than after, so the voice
+	// budget is not quietly draining against nothing while this is disabled.
+	// Delete this comment and the return to bring the plinks back.
+	return;
+
 	if (global.rain_voice_budget < 1) return;
 
 	// Squaring the apparent size makes the weighting sharply favour near drops.
