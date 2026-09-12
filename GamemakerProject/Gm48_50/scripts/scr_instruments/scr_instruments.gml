@@ -46,17 +46,20 @@ function instrument_count() {
 	return array_length(global.instruments);
 }
 
-/// Strike an instrument standing at a given column of the railing.
+/// Strike an instrument standing somewhere in the scene.
 ///
 /// Positioned through the same audio space the rain uses, so an object on the
-/// left of the railing sounds to your left exactly as rain landing there does,
-/// and the two sit in one scene rather than in two unrelated mixes. Priority is
-/// above the rain's so a full pattern never loses notes to a downpour.
-function instrument_play(_index, _screen_x) {
+/// left sounds to your left exactly as rain landing there does, and the two sit
+/// in one scene rather than in two unrelated mixes. Depth comes from the track,
+/// so the back row is genuinely further away rather than merely quieter — the
+/// falloff model handles the level, and it arrives nearer the centre because it
+/// really is closer to straight ahead. Priority is above the rain's so a full
+/// pattern never loses notes to a downpour.
+function instrument_play(_index, _screen_x, _screen_y, _z) {
 	var _d = global.instruments[_index];
 	var _ax = (_screen_x - room_width * 0.5) * global.rain_audio_pan;
-	var _ay = (global.persp_horizon - RAIL_Y) * 0.25;
-	var _az = RAIL_Z * global.rain_audio_depth;
+	var _ay = (global.persp_horizon - _screen_y) * 0.25;
+	var _az = _z * global.rain_audio_depth;
 
 	audio_play_sound_at(
 		_d.sound, _ax, _ay, _az,

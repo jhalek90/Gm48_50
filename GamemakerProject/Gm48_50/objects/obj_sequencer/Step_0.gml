@@ -8,20 +8,23 @@ for (var _k = 0; _k < instrument_count(); _k++) {
 	if (keyboard_check_pressed(ord(string(_k + 1)))) selected = _k;
 }
 
-var _hover = seq_slot_at(mouse_x);
-if (_hover >= 0) {
-	if (mouse_check_button_pressed(mb_left) && slots[_hover] != selected) {
-		slots[_hover] = selected;
+var _cell = seq_cell_at(mouse_x, mouse_y);
+if (_cell.track >= 0) {
+	var _row = slots[_cell.track];
+	if (mouse_check_button_pressed(mb_left) && _row[_cell.step] != selected) {
+		_row[_cell.step] = selected;
 		dirty = true;
 	}
-	if (mouse_check_button_pressed(mb_right) && slots[_hover] != -1) {
-		slots[_hover] = -1;
+	if (mouse_check_button_pressed(mb_right) && _row[_cell.step] != -1) {
+		_row[_cell.step] = -1;
 		dirty = true;
 	}
 }
 
 if (keyboard_check_pressed(vk_backspace)) {
-	for (var _i = 0; _i < SEQ_STEPS; _i++) slots[_i] = -1;
+	for (var _t = 0; _t < SEQ_TRACKS; _t++) {
+		for (var _i = 0; _i < SEQ_STEPS; _i++) slots[_t][_i] = -1;
+	}
 	dirty = true;
 }
 
@@ -41,11 +44,18 @@ while (acc >= _secs) {
 	acc -= _secs;
 	playhead = (playhead + 1) mod SEQ_STEPS;
 
-	var _ins = slots[playhead];
-	if (_ins >= 0) {
-		instrument_play(_ins, seq_slot_x(playhead));
-		flash[playhead] = 1;
+	for (var _t = 0; _t < SEQ_TRACKS; _t++) {
+		var _ins = slots[_t][playhead];
+		if (_ins < 0) continue;
+
+		var _k = global.tracks[_t];
+		instrument_play(_ins, track_slot_x(_t, playhead), _k.y - _k.size * 0.5, _k.z);
+		flash[_t][playhead] = 1;
 	}
 }
 
-for (var _i = 0; _i < SEQ_STEPS; _i++) flash[_i] = max(0, flash[_i] - 0.06);
+for (var _t = 0; _t < SEQ_TRACKS; _t++) {
+	for (var _i = 0; _i < SEQ_STEPS; _i++) {
+		flash[_t][_i] = max(0, flash[_t][_i] - 0.06);
+	}
+}
