@@ -31,6 +31,6 @@ rain_bed_start();
 // The railing occupies a thin slice of depth, so only the drops inside that
 // slice strike it. That is what produces the line of splashes running along
 // the top rail while the rain on either side of it carries on to the ground.
-surface_add(1.7, 2.25, -140, room_width + 140, 448, "wood");
+surface_add(RAIL_Z_NEAR, RAIL_Z_FAR, -140, room_width + 140, RAIL_Y, "wood");
 
 drops = [];

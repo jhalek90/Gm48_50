@@ -12,6 +12,16 @@
 /// entire life is a short crawl near the horizon and a near drop's is a long
 /// fast streak — without any per-distance special casing.
 
+/// The railing, shared by everything that has to agree about where it is.
+///
+/// The rain is told to land on RAIL_Y, the porch draws its top edge there and
+/// the sequencer stands its objects on it. Three files disagreeing about one
+/// number is a bug that looks like an art problem, so the number lives once.
+#macro RAIL_Y 448
+#macro RAIL_Z 1.9
+#macro RAIL_Z_NEAR 1.7
+#macro RAIL_Z_FAR 2.25
+
 /// Screen y of the ground plane at depth z.
 function ground_y(_z) {
 	return global.persp_horizon + global.persp_ground_k / _z;
