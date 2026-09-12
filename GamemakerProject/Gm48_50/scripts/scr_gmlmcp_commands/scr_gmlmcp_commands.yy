@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_gmlmcp_commands",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_gmlmcp_commands",
+  "parent":{"name":"GmlMcp","path":"folders/GmlMcp.yy",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
