@@ -19,7 +19,6 @@
   },
   "name":"Gm48_50",
   "resources":[
-    {"id":{"name":"snd_drop_grain","path":"sounds/snd_drop_grain/snd_drop_grain.yy",},},
     {"id":{"name":"snd_rain_tin","path":"sounds/snd_rain_tin/snd_rain_tin.yy",},},
     {"id":{"name":"snd_rain_loop","path":"sounds/snd_rain_loop/snd_rain_loop.yy",},},
     {"id":{"name":"scr_rain_audio","path":"scripts/scr_rain_audio/scr_rain_audio.yy",},},

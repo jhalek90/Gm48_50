@@ -14,11 +14,6 @@
 /// screen x alone would put distant rain hard left and right, which is the
 /// thing that makes 2D rain sound flat.
 
-/// Seconds of rain available to cut grains from. Set by the length of the
-/// excerpt in snd_drop_grain, and used to keep a random offset from running
-/// past the end of it.
-#macro GRAIN_SPAN 30
-
 /// Set up the audio space. Called once, before any drop lands.
 function rain_audio_init() {
 	// Clamped exponent falloff: gain is (d / ref) ^ -factor between the
@@ -34,7 +29,6 @@ function rain_audio_init() {
 	audio_listener_orientation(0, 0, 1, 0, 1, 0);
 
 	global.rain_voice_budget = 0;
-	global.rain_grain_voices = [];
 }
 
 /// A drop has landed. Decide whether it is one of the ones you hear.
@@ -64,66 +58,12 @@ function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 	// here to keep repeated hits from sounding stamped from the same die.
 	var _gain = global.rain_audio_gain * random_range(0.78, 1.0);
 
-	if (global.rain_drop_mode == 1) {
-		rain_grain_play(_ax, _ay, _az, _gain, _pitch);
-	} else {
-		audio_play_sound_at(
-			snd_drop, _ax, _ay, _az,
-			90, 1400, 1,
-			false, 1,
-			_gain, undefined, _pitch
-		);
-	}
-}
-
-/// Play a short slice cut from anywhere in the rain recording.
-///
-/// The recording has no isolated drop in it to find, so this does not try to
-/// land on one. It takes whatever is at a random offset and relies on the
-/// grain being short enough to read as a single event.
-///
-/// Two things make an arbitrary cut of noise usable. The offset leaves a whole
-/// grain ahead of it so playback never runs off the end, and the grain is faded
-/// in and out instead of switched on — cutting a waveform at a sample that is
-/// not near zero clicks at both ends, and noise is never near zero.
-function rain_grain_play(_ax, _ay, _az, _gain, _pitch) {
-	var _len  = global.rain_grain_len;
-	var _fade = global.rain_grain_fade;
-	var _off  = random(GRAIN_SPAN - _len);
-
-	var _v = audio_play_sound_at(
-		snd_drop_grain, _ax, _ay, _az,
+	audio_play_sound_at(
+		snd_drop, _ax, _ay, _az,
 		90, 1400, 1,
 		false, 1,
-		0, _off, _pitch
+		_gain, undefined, _pitch
 	);
-	audio_sound_gain(_v, _gain, _fade * 1000);
-
-	// Stopping is scheduled in wall time, not source time, so a pitched-up
-	// grain still lasts as long as every other one.
-	array_push(global.rain_grain_voices, {
-		v: _v,
-		fade_at: current_time + (_len - _fade) * 1000,
-		off_at:  current_time + _len * 1000,
-		faded: false,
-	});
-}
-
-/// Retire grains whose slice has run its length.
-function rain_grain_update() {
-	var _list = global.rain_grain_voices;
-	var _fade = global.rain_grain_fade;
-	for (var _i = array_length(_list) - 1; _i >= 0; _i--) {
-		var _g = _list[_i];
-		if (!_g.faded && current_time >= _g.fade_at) {
-			audio_sound_gain(_g.v, 0, _fade * 1000);
-			_g.faded = true;
-		}
-		if (current_time >= _g.off_at) {
-			if (audio_is_playing(_g.v)) audio_stop_sound(_g.v);
-			array_delete(_list, _i, 1);
-		}
-	}
 }
 
 /// Which recording the bed is playing.
