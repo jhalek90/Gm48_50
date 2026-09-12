@@ -20,6 +20,17 @@ global.rain_drop_mode   = gmlmcp_tunable("drop_mode",   1);
 global.rain_grain_len   = gmlmcp_tunable("grain_len",   0.12);
 global.rain_grain_fade  = gmlmcp_tunable("grain_fade",  0.012);
 rain_grain_update();
+
+// Up and down nudge the bed level, for mixing it against the drops by ear.
+// The new value is written back into the tunable registry rather than kept
+// beside it, so a key press and a change sent over the live bridge cannot
+// end up disagreeing about the current level.
+var _nudge = keyboard_check_pressed(vk_up) - keyboard_check_pressed(vk_down);
+if (_nudge != 0) {
+	global.rain_bed_gain = clamp(global.rain_bed_gain + _nudge * 0.1, 0, 1);
+	global.gmlmcp_tunables[$ "bed_gain"] = global.rain_bed_gain;
+}
+
 rain_bed_update();
 
 var _want  = gmlmcp_tunable("rain_count", 2000);
