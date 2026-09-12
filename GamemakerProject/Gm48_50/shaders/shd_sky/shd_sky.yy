@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"shd_sky",
+  "name":"shd_sky",
+  "parent":{
+    "name":"Scene",
+    "path":"folders/Scene.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

@@ -7,3 +7,11 @@
 /// Depth has to stay below 100: the room's Background layer sits at depth 100
 /// and paints opaque black, so anything further back than it is invisible.
 depth = 60;
+
+// Uniform handles for the lake, the sky and the bank, looked up once.
+water_init();
+sky_init();
+grass_init();
+
+// The stand of trees, as a table of positions rather than as instances.
+trees_init();

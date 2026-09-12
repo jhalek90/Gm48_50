@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"shd_water",
+  "name":"shd_water",
+  "parent":{
+    "name":"Scene",
+    "path":"folders/Scene.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

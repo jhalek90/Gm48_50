@@ -45,10 +45,28 @@ function daylight_init() {
 			sky_top:    make_colour_rgb( 86, 104, 138),
 			sky_mid:    make_colour_rgb(140, 156, 178),
 			sky_warm:   make_colour_rgb(222, 186, 158),
+			// The sky's two lights, and the cloud bulk they sit behind. Overcast
+			// throughout, so the sun is never a hard yellow disc — it is a pale warm
+			// patch the weather is letting through, and it reads as morning because
+			// the cloud around it is still cold.
+			sun:        make_colour_rgb(255, 226, 178),
+			moon:       make_colour_rgb(198, 210, 230),
+			cloud:      make_colour_rgb( 96, 108, 132),
+			cloud_lit:  make_colour_rgb(188, 196, 210),
 			shore:      make_colour_rgb(104, 118, 136),
 			water:      make_colour_rgb( 96, 112, 134),
 			water_near: make_colour_rgb( 58,  72,  88),
 			bank:       make_colour_rgb( 56,  68,  58),
+			// The near bank. `bank` is the soil the blades stand in; the other two
+			// are the blades themselves, body and the tips that catch the light.
+			// Three tones is all the posterising has to work with, so they have to
+			// be chosen to read apart at four bands, not to be subtle.
+			grass:      make_colour_rgb( 58,  74,  58),
+			grass_lit:  make_colour_rgb( 88, 106,  78),
+			// Ambient light, for art that is painted rather than palette-driven.
+			// The trees are drawn multiplied through this, so they darken with the
+			// hour without anyone having to author a night version of the sprite.
+			light:      make_colour_rgb(200, 210, 225),
 			wood_dark:  make_colour_rgb( 56,  44,  40),
 			wood:       make_colour_rgb( 88,  68,  56),
 			wood_lit:   make_colour_rgb(120,  94,  74),
@@ -63,10 +81,21 @@ function daylight_init() {
 			sky_top:    make_colour_rgb(126, 142, 166),
 			sky_mid:    make_colour_rgb(168, 180, 196),
 			sky_warm:   make_colour_rgb(206, 208, 206),
+			// Cloud and sky are close together here on purpose. A bright overcast
+			// afternoon has very little contrast in the sky — push the clouds darker
+			// and the weather stops reading as a downpour and starts reading as
+			// scattered cumulus on a nice day.
+			sun:        make_colour_rgb(255, 246, 224),
+			moon:       make_colour_rgb(206, 214, 228),
+			cloud:      make_colour_rgb(120, 130, 150),
+			cloud_lit:  make_colour_rgb(208, 214, 222),
 			shore:      make_colour_rgb(120, 132, 148),
 			water:      make_colour_rgb(112, 128, 148),
 			water_near: make_colour_rgb( 70,  84, 100),
 			bank:       make_colour_rgb( 64,  78,  64),
+			grass:      make_colour_rgb( 70,  88,  66),
+			grass_lit:  make_colour_rgb(104, 124,  88),
+			light:      make_colour_rgb(255, 255, 250),
 			wood_dark:  make_colour_rgb( 66,  52,  46),
 			wood:       make_colour_rgb(102,  80,  64),
 			wood_lit:   make_colour_rgb(138, 110,  86),
@@ -81,10 +110,24 @@ function daylight_init() {
 			sky_top:    make_colour_rgb( 22,  26,  48),
 			sky_mid:    make_colour_rgb( 44,  44,  76),
 			sky_warm:   make_colour_rgb( 78,  62,  86),
+			// The moon is the only thing in the scene that does not dim at night —
+			// it is the light source now, and the clouds are lit by it. The sun
+			// colour is still keyed because the blend runs through it on the way
+			// back round to morning, but it is below the horizon the whole phase.
+			sun:        make_colour_rgb(120,  96, 110),
+			moon:       make_colour_rgb(206, 216, 240),
+			cloud:      make_colour_rgb( 30,  34,  58),
+			cloud_lit:  make_colour_rgb( 68,  72, 104),
 			shore:      make_colour_rgb( 28,  34,  54),
 			water:      make_colour_rgb( 30,  38,  60),
 			water_near: make_colour_rgb( 16,  22,  34),
 			bank:       make_colour_rgb( 20,  28,  26),
+			grass:      make_colour_rgb( 24,  34,  34),
+			grass_lit:  make_colour_rgb( 40,  54,  56),
+			// Not black. A night tint that multiplies the trees to nothing loses
+			// their silhouette against the lake, which is the only thing about them
+			// that still reads at this hour.
+			light:      make_colour_rgb( 70,  80, 120),
 			wood_dark:  make_colour_rgb( 20,  16,  16),
 			wood:       make_colour_rgb( 36,  26,  22),
 			wood_lit:   make_colour_rgb( 54,  40,  32),

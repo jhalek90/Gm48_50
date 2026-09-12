@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_water",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_water",
+  "parent":{"name":"Scene","path":"folders/Scene.yy",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

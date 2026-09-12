@@ -17,6 +17,11 @@
 /// The rain is told to land on RAIL_Y, the porch draws its top edge there and
 /// the sequencer stands its objects on it. Three files disagreeing about one
 /// number is a bug that looks like an art problem, so the number lives once.
+/// Where the near bank meets the water. The grass is rooted no further out
+/// than this and the trees stand between it and the railing, so the waterline
+/// is one number rather than three that drift.
+#macro BANK_Z 2.6
+
 #macro RAIL_Y 448
 #macro RAIL_Z 1.9
 #macro RAIL_Z_NEAR 1.7
