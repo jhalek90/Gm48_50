@@ -10,10 +10,14 @@ var _h = global.persp_horizon;
 // behind a cloud, which a gradient underneath a sprite could never do.
 sky_draw(0, _h);
 
-// Far shore, sitting on the horizon line.
-draw_set_colour(global.pal.shore);
-draw_triangle(120, _h, 430, _h - 96, 760, _h, false);
-draw_triangle(640, _h, 980, _h - 132, 1320, _h, false);
+// The far range, standing on the horizon line. Bottom-left origin, so the
+// horizon row is the draw position with no offset to remember.
+//
+// The sprite is tonal rather than coloured — white down through greys — and is
+// multiplied by the palette here, so the shape comes from the art and the hour
+// comes from the table. Baking colour into it would make the mountains the one
+// thing in the scene that does not answer to the light.
+draw_sprite_ext(spr_mountains, 0, 0, _h, 1, 1, 0, global.pal.shore, 1);
 
 // The lake. The gradient that used to be a two-colour rectangle now lives
 // inside shd_water, which paints it and the wave field in one pass — the

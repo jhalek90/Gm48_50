@@ -25,6 +25,7 @@
   },
   "name":"Gm48_50",
   "resources":[
+    {"id":{"name":"spr_mountains","path":"sprites/spr_mountains/spr_mountains.yy",},},
     {"id":{"name":"obj_daylight","path":"objects/obj_daylight/obj_daylight.yy",},},
     {"id":{"name":"obj_gmlmcp_bridge","path":"objects/obj_gmlmcp_bridge/obj_gmlmcp_bridge.yy",},},
     {"id":{"name":"obj_porch","path":"objects/obj_porch/obj_porch.yy",},},
