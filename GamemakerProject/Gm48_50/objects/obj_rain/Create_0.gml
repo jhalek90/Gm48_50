@@ -23,6 +23,7 @@ global.rain_audio_pan   = 0.55;
 global.rain_audio_depth = 34;
 global.rain_audio_reach = 1.4;
 global.rain_bed_gain    = 0.45;
+global.rain_bed_track   = 1;
 rain_audio_init();
 rain_bed_start();
 

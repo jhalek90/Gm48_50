@@ -66,6 +66,17 @@ function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 	);
 }
 
+/// Which recording the bed is playing.
+///
+/// Two beds are shipped so they can be compared by ear while the game runs:
+/// 0 is the original loop, 1 is rain on a tin roof, which matches the roof the
+/// player is actually sitting under. The tin recording was quieter by about
+/// 12 dB and was lifted on import, so one gain setting suits both and swapping
+/// between them does not jump in level.
+function rain_bed_sound(_track) {
+	return (_track == 1) ? snd_rain_tin : snd_rain_loop;
+}
+
 /// Start the ambient bed under the individual drops.
 ///
 /// The bed is deliberately not positioned. It is the sound of being inside the
@@ -73,11 +84,19 @@ function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 /// plinks carry all the spatial information. Giving it a position would pull
 /// the whole storm to a point somewhere off the porch.
 function rain_bed_start() {
-	global.rain_bed = audio_play_sound(snd_rain_loop, 2, true, global.rain_bed_gain);
+	global.rain_bed_playing = global.rain_bed_track;
+	global.rain_bed = audio_play_sound(
+		rain_bed_sound(global.rain_bed_track), 2, true, global.rain_bed_gain
+	);
 }
 
-/// Track the live gain so the bed can be balanced against the drops by ear.
+/// Track the live gain, and swap recordings if the track changed.
 function rain_bed_update() {
+	if (global.rain_bed_track != global.rain_bed_playing) {
+		if (audio_is_playing(global.rain_bed)) audio_stop_sound(global.rain_bed);
+		rain_bed_start();
+		return;
+	}
 	if (!audio_is_playing(global.rain_bed)) return;
 	audio_sound_gain(global.rain_bed, global.rain_bed_gain, 0);
 }
