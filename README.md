@@ -1,4 +1,4 @@
-# Petrichor
+# Petrichord
 
 *A cozy rain-percussion sandbox. You don't play the music — you build the instrument and let the storm play it.*
 
