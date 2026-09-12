@@ -14,6 +14,8 @@ global.rain_audio_gain  = gmlmcp_tunable("audio_gain",  0.55);
 global.rain_audio_pan   = gmlmcp_tunable("audio_pan",   0.55);
 global.rain_audio_depth = gmlmcp_tunable("audio_depth", 34);
 global.rain_audio_reach = gmlmcp_tunable("audio_reach", 1.4);
+global.rain_bed_gain    = gmlmcp_tunable("bed_gain",    0.45);
+rain_bed_update();
 
 var _want  = gmlmcp_tunable("rain_count", 2000);
 var _speed = gmlmcp_tunable("rain_speed", 30);

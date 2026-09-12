@@ -19,6 +19,7 @@
   },
   "name":"Gm48_50",
   "resources":[
+    {"id":{"name":"snd_rain_loop","path":"sounds/snd_rain_loop/snd_rain_loop.yy",},},
     {"id":{"name":"scr_rain_audio","path":"scripts/scr_rain_audio/scr_rain_audio.yy",},},
     {"id":{"name":"snd_drop","path":"sounds/snd_drop/snd_drop.yy",},},
     {"id":{"name":"obj_gmlmcp_bridge","path":"objects/obj_gmlmcp_bridge/obj_gmlmcp_bridge.yy",},},

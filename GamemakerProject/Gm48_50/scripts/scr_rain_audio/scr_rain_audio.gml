@@ -65,3 +65,19 @@ function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 		_gain, undefined, _pitch
 	);
 }
+
+/// Start the ambient bed under the individual drops.
+///
+/// The bed is deliberately not positioned. It is the sound of being inside the
+/// weather rather than of any one drop, so it plays flat in stereo while the
+/// plinks carry all the spatial information. Giving it a position would pull
+/// the whole storm to a point somewhere off the porch.
+function rain_bed_start() {
+	global.rain_bed = audio_play_sound(snd_rain_loop, 2, true, global.rain_bed_gain);
+}
+
+/// Track the live gain so the bed can be balanced against the drops by ear.
+function rain_bed_update() {
+	if (!audio_is_playing(global.rain_bed)) return;
+	audio_sound_gain(global.rain_bed, global.rain_bed_gain, 0);
+}
