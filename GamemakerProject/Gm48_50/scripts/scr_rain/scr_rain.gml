@@ -55,7 +55,7 @@ function rain_add_splash(_x, _y, _scale, _kind) {
 /// swallowed if they were drawn with everything else. `_wood` picks the pass.
 function rain_draw_splashes(_wood) {
 	var _life = gmlmcp_tunable("splash_life", 18);
-	draw_set_colour(make_colour_rgb(214, 232, 250));
+	draw_set_colour(global.pal.splash);
 
 	var _list = global.rain_splashes;
 	for (var _i = 0, _n = array_length(_list); _i < _n; _i++) {

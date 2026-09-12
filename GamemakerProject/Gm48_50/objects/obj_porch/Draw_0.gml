@@ -1,6 +1,8 @@
-var _wood_dark = make_colour_rgb(34, 26, 24);
-var _wood      = make_colour_rgb(58, 42, 34);
-var _wood_lit  = make_colour_rgb(82, 60, 46);
+// Wood from the day/night palette: the porch is lit by the same sky the lake
+// is, so it has to darken with it or the scene comes apart at dusk.
+var _wood_dark = global.pal.wood_dark;
+var _wood      = global.pal.wood;
+var _wood_lit  = global.pal.wood_lit;
 
 // Roof overhang. The rain is drawn beneath this, so the underside of the roof
 // cuts the top off the falling field the way a real porch roof would.
@@ -29,6 +31,8 @@ for (var _x = 60; _x < room_width; _x += 78) {
 draw_set_colour(_wood);
 draw_rectangle(0, 596, room_width, 618, false);
 
-// Porch floor in the immediate foreground.
-draw_set_colour(make_colour_rgb(42, 32, 28));
+// Porch floor in the immediate foreground. Mixed from the two wood tones
+// rather than given a palette entry of its own — it is a shade between them at
+// every hour, so deriving it keeps one less colour in step by hand.
+draw_set_colour(merge_colour(_wood_dark, _wood, 0.35));
 draw_rectangle(0, 660, room_width, room_height, false);

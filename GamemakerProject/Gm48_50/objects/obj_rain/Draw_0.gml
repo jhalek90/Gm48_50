@@ -15,7 +15,7 @@ var _wind   = gmlmcp_tunable("rain_wind",  -4);
 var _streak = gmlmcp_tunable("rain_streak", 62);
 var _a_near = gmlmcp_tunable("rain_alpha_near", 0.80);
 var _a_far  = gmlmcp_tunable("rain_alpha_far",  0.24);
-var _col    = make_colour_rgb(206, 226, 247);
+var _col    = global.pal.rain;
 
 // The velocity direction is the same for every drop — only its length changes
 // with depth — so the unit vector is worth computing once rather than 5000

@@ -19,6 +19,8 @@
   },
   "name":"Gm48_50",
   "resources":[
+    {"id":{"name":"obj_daylight","path":"objects/obj_daylight/obj_daylight.yy",},},
+    {"id":{"name":"scr_daylight","path":"scripts/scr_daylight/scr_daylight.yy",},},
     {"id":{"name":"snd_bell","path":"sounds/snd_bell/snd_bell.yy",},},
     {"id":{"name":"snd_bucket","path":"sounds/snd_bucket/snd_bucket.yy",},},
     {"id":{"name":"snd_glass","path":"sounds/snd_glass/snd_glass.yy",},},

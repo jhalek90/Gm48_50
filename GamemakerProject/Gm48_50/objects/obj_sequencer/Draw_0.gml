@@ -1,5 +1,7 @@
 var _cell = seq_cell_at(mouse_x, mouse_y);
-var _haze = make_colour_rgb(48, 60, 92);
+// Distance hazes toward the water behind it, so the far ledges recede into
+// whatever colour the lake is at this hour instead of a fixed dusk blue.
+var _haze = global.pal.water;
 var _near_z = global.tracks[0].z;
 
 // Back to front, so a nearer ledge overlaps the one behind it.
