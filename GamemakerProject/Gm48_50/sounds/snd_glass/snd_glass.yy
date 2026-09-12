@@ -1,6 +1,6 @@
 {
   "$GMSound":"v2",
-  "%Name":"snd_drop",
+  "%Name":"snd_glass",
   "audioGroupId":{
     "name":"audiogroup_default",
     "path":"audiogroups/audiogroup_default",
@@ -10,9 +10,9 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.189773,
+  "duration":2.403265,
   "exportDir":"",
-  "name":"snd_drop",
+  "name":"snd_glass",
   "parent":{
     "name":"Audio",
     "path":"folders/Audio.yy",
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"snd_drop.wav",
+  "soundFile":"snd_glass.wav",
   "volume":1.0,
 }

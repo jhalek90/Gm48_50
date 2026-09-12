@@ -1,6 +1,6 @@
 {
   "$GMSound":"v2",
-  "%Name":"snd_drop",
+  "%Name":"snd_bucket",
   "audioGroupId":{
     "name":"audiogroup_default",
     "path":"audiogroups/audiogroup_default",
@@ -10,9 +10,9 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.189773,
+  "duration":2.310385,
   "exportDir":"",
-  "name":"snd_drop",
+  "name":"snd_bucket",
   "parent":{
     "name":"Audio",
     "path":"folders/Audio.yy",
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"snd_drop.wav",
+  "soundFile":"snd_bucket.wav",
   "volume":1.0,
 }

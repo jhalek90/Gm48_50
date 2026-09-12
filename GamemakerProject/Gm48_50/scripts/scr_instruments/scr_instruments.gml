@@ -5,9 +5,11 @@
 /// the palette all read this table — so giving the bucket its own recording is
 /// a one-line edit here and nothing else has to know.
 ///
-/// Every instrument currently shares snd_drop and is told apart by pitch alone,
-/// which is a placeholder. Swapping in a real sample per row changes nothing
-/// downstream.
+/// `gain` balances the samples against each other. Every sample was peak
+/// normalised on import, but peak is not loudness: the bell and the glass ring
+/// for over two seconds where a hat is gone in a tenth of one, so at equal peak
+/// they are much louder in the mix. These gains come from the RMS of each
+/// sample's audible part, which is a closer match for what the ear does.
 ///
 /// Pitches are authored in semitones on a minor pentatonic scale (0, 3, 5, 7,
 /// 10, 12, 15) rather than as raw playback ratios. Two reasons. A ratio like
@@ -17,7 +19,7 @@
 /// arrangement cannot sound wrong, which is the whole design.
 
 /// One row of the table.
-function instrument(_name, _sound, _semitones, _colour) {
+function instrument(_name, _sound, _semitones, _gain, _colour) {
 	return {
 		name: _name,
 		sound: _sound,
@@ -25,20 +27,22 @@ function instrument(_name, _sound, _semitones, _colour) {
 		/// because an equal-tempered step is a ratio and hand-written ratios
 		/// invite arithmetic nobody can check by eye.
 		pitch: power(2, _semitones / 12),
-		gain: 0.85,
+		gain: _gain,
 		colour: _colour,
 	};
 }
 
 function instruments_init() {
 	global.instruments = [
-		instrument("Bucket",  snd_drop,  0, make_colour_rgb(150, 166, 178)),
-		instrument("Bowl",    snd_drop,  3, make_colour_rgb(216, 198, 166)),
-		instrument("Tin",     snd_drop,  5, make_colour_rgb(178, 188, 180)),
-		instrument("Barrel",  snd_drop,  7, make_colour_rgb(150, 104,  62)),
-		instrument("Tray",    snd_drop, 10, make_colour_rgb(118, 132, 146)),
-		instrument("Pitcher", snd_drop, 12, make_colour_rgb(228, 226, 214)),
-		instrument("Bell",    snd_drop, 15, make_colour_rgb(214, 172,  88)),
+		instrument("Bucket",  snd_bucket,  0, 0.86, make_colour_rgb(150, 166, 178)),
+		instrument("Bowl",    snd_glass,   3, 0.64, make_colour_rgb(216, 198, 166)),
+		instrument("Tin",     snd_hat2,    5, 0.94, make_colour_rgb(178, 188, 180)),
+		instrument("Barrel",  snd_drop,    7, 0.84, make_colour_rgb(150, 104,  62)),
+		instrument("Tray",    snd_hat1,   10, 0.95, make_colour_rgb(118, 132, 146)),
+		// A pitcher is a smaller vessel than a bucket, so it borrows the same
+		// recording an octave up rather than needing its own.
+		instrument("Pitcher", snd_bucket, 12, 0.86, make_colour_rgb(228, 226, 214)),
+		instrument("Bell",    snd_bell,   15, 0.66, make_colour_rgb(214, 172,  88)),
 	];
 }
 

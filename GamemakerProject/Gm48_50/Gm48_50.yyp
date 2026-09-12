@@ -19,6 +19,11 @@
   },
   "name":"Gm48_50",
   "resources":[
+    {"id":{"name":"snd_bell","path":"sounds/snd_bell/snd_bell.yy",},},
+    {"id":{"name":"snd_bucket","path":"sounds/snd_bucket/snd_bucket.yy",},},
+    {"id":{"name":"snd_glass","path":"sounds/snd_glass/snd_glass.yy",},},
+    {"id":{"name":"snd_hat1","path":"sounds/snd_hat1/snd_hat1.yy",},},
+    {"id":{"name":"snd_hat2","path":"sounds/snd_hat2/snd_hat2.yy",},},
     {"id":{"name":"obj_sequencer","path":"objects/obj_sequencer/obj_sequencer.yy",},},
     {"id":{"name":"scr_instruments","path":"scripts/scr_instruments/scr_instruments.yy",},},
     {"id":{"name":"scr_sequencer","path":"scripts/scr_sequencer/scr_sequencer.yy",},},
