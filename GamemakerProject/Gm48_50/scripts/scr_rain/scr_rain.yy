@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_rain",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_rain",
+  "parent":{"name":"Scene","path":"folders/Scene.yy",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
