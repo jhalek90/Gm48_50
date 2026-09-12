@@ -15,7 +15,11 @@ global.rain_audio_pan   = gmlmcp_tunable("audio_pan",   0.55);
 global.rain_audio_depth = gmlmcp_tunable("audio_depth", 34);
 global.rain_audio_reach = gmlmcp_tunable("audio_reach", 1.4);
 global.rain_bed_gain    = gmlmcp_tunable("bed_gain",    0.45);
-global.rain_bed_track   = gmlmcp_tunable("bed_track",   1);
+global.rain_bed_track   = gmlmcp_tunable("bed_track",   0);
+global.rain_drop_mode   = gmlmcp_tunable("drop_mode",   1);
+global.rain_grain_len   = gmlmcp_tunable("grain_len",   0.12);
+global.rain_grain_fade  = gmlmcp_tunable("grain_fade",  0.012);
+rain_grain_update();
 rain_bed_update();
 
 var _want  = gmlmcp_tunable("rain_count", 2000);
