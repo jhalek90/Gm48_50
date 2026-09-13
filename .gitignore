@@ -4,3 +4,7 @@ standard.md
 # new one. Build leftovers, not source.
 *.old.yy
 *.old.png
+
+# Playable builds. 42MB of zips and a data.win, regenerated every time and
+# nothing anybody needs from source control.
+builds/
