@@ -67,9 +67,13 @@
 /// Twice the block the rest of the clutter is drawn on. The cat is the nearest
 /// thing in the scene and the only one at the viewer's feet, so it is the one
 /// prop that would look like a miniature at the shared size.
-#macro CAT_X      200
+#macro CAT_X      150
 #macro CAT_Y      744
 #macro CAT_BLOCK    8
+
+/// How near it sounds. The nearest thing in the scene: it is at your feet,
+/// inside the railing, closer than anything hanging from the roof.
+#macro CAT_Z      1.1
 
 #macro RUG_X1  356
 #macro RUG_X2 1004
@@ -435,10 +439,20 @@ function clutter_cat(_cx, _by) {
 	// and not a seam across the middle of the animal.
 	var _lift = round(0.5 + 0.5 * sin(global.wind_time * 0.8)) * 3;
 
-	var _fur  = pal_lit(make_colour_rgb(118, 110, 104));
-	var _lit  = pal_lit(make_colour_rgb(158, 150, 142));
-	var _dark = pal_lit(make_colour_rgb( 78,  72,  68));
-	var _pink = pal_lit(make_colour_rgb(178, 134, 130));
+	// Calico: three colours in hard patches, not a tabby's stripes.
+	//
+	// The patches are the point. A single fur colour left the whole animal as
+	// one silhouette to be read, and the silhouette is the part this grid
+	// cannot get right. Three patches with ragged edges give the eye something
+	// to read instead of the outline, and a white cat with a ginger back and a
+	// black face is a specific enough animal that it does not have to be a
+	// perfect one.
+	var _fur  = pal_lit(make_colour_rgb(222, 214, 200));   // white, the ground
+	var _gng  = pal_lit(make_colour_rgb(188, 118,  58));   // ginger
+	var _blk  = pal_lit(make_colour_rgb( 56,  48,  44));   // black
+	var _lit  = pal_lit(make_colour_rgb(244, 240, 230));
+	var _dark = pal_lit(make_colour_rgb( 40,  34,  32));
+	var _pink = pal_lit(make_colour_rgb(196, 142, 138));
 
 	draw_set_alpha(1);
 
@@ -454,29 +468,60 @@ function clutter_cat(_cx, _by) {
 	// with any ears. A cat asleep is low at the head and high at the rump, so
 	// the front falls away and the back keeps its width to the top. That
 	// asymmetry is the shape; the ears only confirm it.
+	// front, back, lift, where the black ends, where the ginger begins.
+	//
+	// The last two are measured along the animal, negative toward the head, and
+	// they are deliberately uneven row to row. Even edges would give three
+	// stripes; uneven ones give patches.
 	var _rows = [
-		[ 9.0, 9.5, 0], [ 9.0, 9.5, 0], [ 8.5, 9.5, 0],
-		[ 8.0, 9.5, 0], [ 7.0, 9.0, 0], [ 5.5, 8.5, 1],
-		[ 4.0, 8.0, 1], [ 2.5, 6.5, 2], [ 1.0, 4.5, 2],
+		[ 9.0, 9.5, 0, -5.0,  5.0],
+		[ 9.0, 9.5, 0, -4.0,  4.5],
+		[ 8.5, 9.5, 0, -5.0,  3.5],
+		[ 8.0, 9.5, 0, -3.5,  3.0],
+		[ 7.0, 9.0, 0, -4.5,  2.0],
+		[ 5.5, 8.5, 1, -2.0,  1.0],
+		[ 4.0, 8.0, 1, -3.0,  0.0],
+		[ 2.5, 6.5, 2,  0.0, -1.0],
+		[ 1.0, 4.5, 2,  1.0, -2.0],
 	];
 
 	// Each row's bottom edge takes the row below's lift, not its own, so the
 	// stack stays joined. Lifting a row by its own offset at both edges opens a
 	// gap under it, and the gap is deck: the first attempt drew a dark bar
 	// straight across the cat every time it breathed in.
+	// Position along the animal, in blocks: negative toward the head.
+	var _p = function(_x, _face, _b, _v) { return _x - _face * _v * _b; };
+
 	for (var _i = 0; _i < array_length(_rows); _i++) {
-		var _f    = _rows[_i][0] * _b;
-		var _r    = _rows[_i][1] * _b;
+		var _f    = _rows[_i][0];
+		var _r    = _rows[_i][1];
 		var _top  = _rows[_i][2] * _lift;
 		var _base = (_i > 0) ? _rows[_i - 1][2] * _lift : 0;
 
-		draw_set_colour(_i < 2 ? _dark : _fur);
-		draw_rectangle(_x + _face * _f, _y - (_i + 1) * _b - _top,
-		               _x - _face * _r, _y -  _i      * _b - _base, false);
+		var _y1 = _y - (_i + 1) * _b - _top;
+		var _y2 = _y -  _i      * _b - _base;
+
+		// White first, the whole row, then the two patches over it.
+		draw_set_colour(_i < 1 ? _dark : _fur);
+		draw_rectangle(_p(_x, _face, _b, -_f), _y1, _p(_x, _face, _b, _r), _y2, false);
+
+		if (_i >= 1) {
+			var _bk = min(_rows[_i][3],  _r);
+			var _gn = max(_rows[_i][4], -_f);
+
+			if (_bk > -_f) {
+				draw_set_colour(_blk);
+				draw_rectangle(_p(_x, _face, _b, -_f), _y1, _p(_x, _face, _b, _bk), _y2, false);
+			}
+			if (_gn < _r) {
+				draw_set_colour(_gng);
+				draw_rectangle(_p(_x, _face, _b, _gn), _y1, _p(_x, _face, _b, _r), _y2, false);
+			}
+		}
 	}
 
 	// The lit curve of the back, down the flank away from the face.
-	draw_set_colour(_lit);
+	draw_set_colour(pal_lit(make_colour_rgb(222, 156, 92)));
 	draw_rectangle(_x - _face * _b * 1.5, _y - _b * 9 - _lift * 2,
 	               _x - _face * _b * 4.0, _y - _b * 8 - _lift * 2, false);
 	draw_rectangle(_x - _face * _b * 3.5, _y - _b * 8 - _lift * 2,
@@ -493,6 +538,19 @@ function clutter_cat(_cx, _by) {
 	draw_rectangle(_hx - _b * 3.0, _ht + _b * 0.5, _hx + _b * 3.0, _y, false);
 	draw_rectangle(_hx - _b * 2.5, _ht,            _hx + _b * 2.5, _ht + _b * 0.5, false);
 
+	// Three colours on the crown, and the face left white under them.
+	//
+	// Both earlier attempts swamped it. The face is six blocks across, so a
+	// patch over half of it is not a marking, it is the head's colour, and the
+	// head stopped being a head and became a dark hole with a chin. Each patch
+	// is a quarter of the crown now: black one side, ginger the other, white
+	// everywhere the eye actually looks.
+	draw_set_colour(_blk);
+	draw_rectangle(_hx - _face * _b * 0.5, _ht, _hx - _face * _b * 3.0, _ht + _b * 1.0, false);
+
+	draw_set_colour(_gng);
+	draw_rectangle(_hx + _face * _b * 0.5, _ht, _hx + _face * _b * 2.5, _ht + _b * 1.0, false);
+
 	// Ears, stepped rather than square, and the largest single thing on the
 	// head. At this distance the ears are most of what says cat: the body is a
 	// mound, and a mound with a small round lump on the front is any sleeping
@@ -502,12 +560,17 @@ function clutter_cat(_cx, _by) {
 	//
 	// The gap between them matters as much as the shape. One block of fur
 	// showing through is what stops the pair reading as a single crest.
-	var _ear = [-2.25, 1.25];   // near ear, far ear, in blocks from head centre
+	// Near ear, far ear, in blocks from head centre. Pulled in off the edges:
+	// at 2.25 and 1.25 the far one sat exactly on the head's outline and read
+	// as coming loose from it.
+	var _ear = [-2.0, 0.5];
 
 	for (var _e = 0; _e < 2; _e++) {
 		var _ex = _hx + _face * _b * _ear[_e];
 
-		draw_set_colour(_fur);
+		// The near ear is black, the far one ginger. One of each is what a
+		// calico's head looks like and it also tells the two ears apart.
+		draw_set_colour(_e == 0 ? _blk : _gng);
 		draw_rectangle(_ex, _ht - _b * 1.0, _ex + _face * _b * 1.75, _ht, false);
 		draw_rectangle(_ex + _face * _b * 0.25, _ht - _b * 2.0,
 		               _ex + _face * _b * 1.25, _ht - _b * 1.0, false);
@@ -515,8 +578,8 @@ function clutter_cat(_cx, _by) {
 
 	// The inside of the near ear only. The far one is turned away.
 	draw_set_colour(_pink);
-	draw_rectangle(_hx - _face * _b * 1.75, _ht - _b * 1.25,
-	               _hx - _face * _b * 1.0,  _ht - _b * 0.25, false);
+	draw_rectangle(_hx - _face * _b * 1.5, _ht - _b * 1.0,
+	               _hx - _face * _b * 0.75, _ht - _b * 0.25, false);
 
 	// Muzzle and chin, at the far end of the head and a shade lighter.
 	draw_set_colour(_lit);
@@ -530,9 +593,55 @@ function clutter_cat(_cx, _by) {
 
 	// The tail, brought round the back and laid along the deck. Stepped,
 	// because a diagonal here is a stair and pretending otherwise costs the
-	// only smooth edge in the frame.
-	draw_set_colour(_dark);
+	// only smooth edge in the frame. Ginger, carrying the rump's colour round.
+	draw_set_colour(_gng);
 	draw_rectangle(_x - _face * _b *  7, _y - _b * 1.5, _x - _face * _b * 10.5, _y - _b * 0.5, false);
 	draw_rectangle(_x - _face * _b * 10, _y - _b * 3.0, _x - _face * _b * 11.5, _y - _b * 1.5, false);
 	draw_rectangle(_x - _face * _b * 11, _y - _b * 4.5, _x - _face * _b * 12.5, _y - _b * 3.0, false);
+}
+
+/// Is this screen position on the cat?
+///
+/// The whole animal as one box, body and head together, grown a little. This is
+/// something you reach for once because you noticed it, not a target worth
+/// being precise about, which is the same call the lantern's hit test makes.
+function cat_at(_mx, _my) {
+	var _b = CAT_BLOCK;
+	var _x = floor(CAT_X / _b) * _b;
+	var _y = floor(CAT_Y / _b) * _b;
+
+	return (_mx >= _x - _b * 13 && _mx <= _x + _b * 13 &&
+	        _my >= _y - _b * 10 && _my <= _y + _b);
+}
+
+/// Wake it, briefly.
+///
+/// In key, through the same roll the duck and the chime use, so the one thing
+/// on this porch that is not an instrument still lands in the scale the music
+/// is in. Positioned by the same three lines everything else here is, and it is
+/// the nearest thing in the scene, so its z is the closest the porch has.
+///
+/// It does not stop sleeping. A cat that woke up and moved would need somewhere
+/// to go and something to do when it got there, and the joke is that it stays
+/// exactly where it is.
+function cat_meow() {
+	var _b = CAT_BLOCK;
+	var _x = floor(CAT_X / _b) * _b;
+	var _y = floor(CAT_Y / _b) * _b - _b * 4;
+
+	var _semi = music_note_now(music_roll_notes());
+
+	audio_play_sound_at(
+		snd_cat,
+		(_x - room_width * 0.5) * global.rain_audio_pan,
+		(_y - global.persp_horizon) * 0.25,
+		CAT_Z * global.rain_audio_depth,
+		90, 1400, 1,
+		false, 6,
+		gmlmcp_tunable("cat_gain", 0.8) * mix_sfx(), undefined,
+		power(2, (gmlmcp_tunable("cat_tune", 0) + _semi) / 12)
+	);
+
+	var _look = music_note_look(_semi);
+	notepuff_add(_x, _y - _b * 6, _look.colour, _look.label);
 }
