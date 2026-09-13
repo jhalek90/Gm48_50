@@ -28,9 +28,10 @@
 
 /// How many chord voices may ring at once.
 ///
-/// A two bar phrase struck every two bars overlaps by a quarter of a second, so
-/// two is the working number and three is the tail of a scrub. This only ever
-/// bites when the day is being dragged about.
+/// The overlap is the point, not an accident: a chord struck every bar rings
+/// for two more, so three are sounding at any moment and the harmony joins up
+/// instead of arriving in separate pieces. Four leaves room for the tail of a
+/// scrub on top of that.
 #macro CHORD_VOICES 4
 
 /// The notes a player can be handed, in semitones from D.
@@ -106,24 +107,23 @@ function music_uses_chords(_phase) {
 	return array_length(_g) > 0;
 }
 
-/// How many whole bars one chord sample occupies.
+/// How many bars apart the chords are struck.
 ///
-/// Measured, not written down. DADE is 4.26 seconds against a two second bar,
-/// so it is a two bar phrase with a little ring on the end — and that is the
-/// spacing it wants, because striking it every bar would stack three voices
-/// deep and striking it every four would leave two bars of silence in the
-/// middle of the group.
+/// One. A chord lands on every measure, which is what the progression is
+/// written as and what it sounds like.
 ///
-/// Rounding the measurement is the same trick music_init uses on the phase
-/// length, and it is worth having for the same reason: the chords are still
-/// being exported. Come back with a longer take and the spacing follows it
-/// instead of needing a number changed here.
-function music_chord_bars(_snd) {
-	var _len = audio_sound_length(_snd);
-	if (_len <= 0) return 2;
-
-	return max(1, round(_len / music_bar_secs()));
-}
+/// This was derived from the sample length at first — DADE is 4.26 seconds
+/// against a two second bar, so it rounded to two — and that was the wrong
+/// question asked precisely. A file's length is its notated length *plus its
+/// release*, and a chord rings long after it is struck: 4.26 seconds is a one
+/// bar chord with a two second tail on it, not a two bar phrase. Measuring the
+/// tail and calling it metre put the harmony at half speed.
+///
+/// So it is a plain number. How long to sit on a chord is a musical decision,
+/// and the recording cannot be asked about it — the only part of a sample that
+/// knows where the next one goes is the part that was written down, and that
+/// is not in the file.
+#macro CHORD_BARS 1
 
 /// Which half of the current phase the clock is in.
 function music_section() {
@@ -364,10 +364,7 @@ function music_chord_step(_phase, _bar, _gain) {
 	var _n      = array_length(_groups);
 	if (_n <= 0) return;
 
-	// Measured off the first sample and applied to all of them. They are one
-	// set recorded together, and a progression whose chords sat on different
-	// grids would be the exact fault this is meant to remove.
-	var _span   = gmlmcp_tunable("chord_bars", music_chord_bars(_groups[0]));
+	var _span   = max(1, gmlmcp_tunable("chord_bars", CHORD_BARS));
 	var _reps   = max(1, gmlmcp_tunable("chord_repeats", CHORD_REPEATS));
 	var _block  = _span * _reps;
 
