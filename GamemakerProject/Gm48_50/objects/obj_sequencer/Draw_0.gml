@@ -55,13 +55,11 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 		shadow_cast(_x, _k.y, _k.size * 1.15, c_black,
 			(1 - _fade) * (1 - _f * 0.45));
 
-		draw_set_alpha(1);
-		draw_set_colour(merge_colour(_col, c_white, _f * 0.65));
-		draw_rectangle(_x - _half, _top - _lift, _x + _half, _k.y - _lift, false);
-
-		draw_set_colour(c_black);
-		draw_set_alpha(0.45 * (1 - _fade));
-		draw_rectangle(_x - _half, _top - _lift, _x + _half, _k.y - _lift, true);
+		// The object itself, standing on the ledge. Handed a colour that is
+		// already hazed for its distance and paled for the strike, so the
+		// renderer never has to know the hour or whether the note just fired.
+		prop_draw(_ins, _x, _k.y - _lift, _k.size,
+			merge_colour(_col, c_white, _f * 0.65), 1);
 	}
 
 	// The cell under the cursor, outlined in what would be dropped there.
@@ -76,27 +74,38 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 // --- Palette -------------------------------------------------------------
 // Laid out on a pitch wide enough for the longest name. Sized to the boxes
 // instead, the labels run into each other.
-var _bw = 62;
-var _by = room_height - 104;
+var _bw  = PICK_SIZE;
+var _by  = PICK_Y;
+var _hot = seq_palette_at(mouse_x, mouse_y);
 
 draw_set_halign(fa_center);
 for (var _p = 0; _p < instrument_count(); _p++) {
 	var _pd = global.instruments[_p];
-	var _bx = 40 + _p * 84;
+	var _bx = PICK_X + _p * PICK_PITCH;
 	var _cx = _bx + _bw * 0.5;
-	var _on = (_p == selected);
+	var _on    = (_p == selected);
+	var _hover = (_hot == _p);
 
-	draw_set_alpha(_on ? 1 : 0.4);
-	draw_set_colour(_pd.colour);
+	// The picker draws the objects the same way the ledges do, so what you
+	// choose from is what you get. A row of coloured squares meant learning
+	// which square was the pitcher.
+	draw_set_alpha(_on ? 0.22 : (_hover ? 0.18 : 0.10));
+	draw_set_colour(c_black);
 	draw_rectangle(_bx, _by, _bx + _bw, _by + _bw, false);
 
-	draw_set_colour(_on ? c_white : c_black);
-	draw_set_alpha(_on ? 0.95 : 0.55);
+	prop_draw(_p, _cx, _by + _bw - 4, _bw - 10, _pd.colour, _on ? 1 : (_hover ? 0.8 : 0.45));
+
+	draw_set_colour((_on || _hover) ? c_white : c_black);
+	draw_set_alpha(_on ? 0.95 : (_hover ? 0.7 : 0.55));
 	draw_rectangle(_bx, _by, _bx + _bw, _by + _bw, true);
 
-	draw_set_colour(c_black);
-	draw_set_alpha(_on ? 0.8 : 0.5);
-	draw_text(_cx, _by + 20, string(_p + 1));
+	// Tucked into the corner. Centred, it sat squarely on top of the object it
+	// was there to label, which was fine when the button was a plain swatch.
+	draw_set_halign(fa_left);
+	draw_set_colour(c_white);
+	draw_set_alpha(_on ? 0.85 : 0.4);
+	draw_text(_bx + 4, _by + 1, string(_p + 1));
+	draw_set_halign(fa_center);
 
 	draw_set_colour(c_white);
 	draw_set_alpha(_on ? 0.95 : 0.5);
@@ -106,5 +115,5 @@ draw_set_halign(fa_left);
 
 draw_set_colour(c_white);
 draw_set_alpha(0.7);
-draw_text(40, _by - 26, "1-7 pick   LMB place   RMB remove   Backspace clear   " + string(round(gmlmcp_tunable("bpm", 84))) + " BPM");
+draw_text(40, _by - 26, "1-" + string(instrument_count()) + " pick   LMB place   RMB remove   Backspace clear   " + string(round(gmlmcp_tunable("bpm", SEQ_BPM))) + " BPM");
 draw_set_alpha(1);

@@ -31,7 +31,9 @@ if (show_ui) {
 // sequencer's clock is: a dropped frame should cost the cycle nothing. Held
 // still while dragging, so the scrub does not fight the cycle for the handle.
 if (!paused && !dragging) {
-	var _secs = max(1, gmlmcp_tunable("day_secs", 180));
+	// Defaulted from the music rather than from a round number: a phase lasts
+	// exactly one track, so the sky finishes changing as the piece finishes.
+	var _secs = max(1, gmlmcp_tunable("day_secs", music_cycle_secs()));
 
 	// The elapsed time is floored at zero before it is added. The wrap turns any
 	// negative step into a jump most of the way round the clock, so a single odd
@@ -52,6 +54,9 @@ wind_step();
 // shadows and the light shafts all read this, and they have to be lit from the
 // same instant the colours were blended for.
 global.light = sky_light();
+
+// The rhythm track for this phase, faded and handed over on the beat.
+music_step();
 
 global.gmlmcp_tunables[$ "time_of_day"] = global.day_t;
 sent = global.day_t;

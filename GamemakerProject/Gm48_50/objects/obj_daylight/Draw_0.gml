@@ -73,5 +73,5 @@ draw_text(_x1, _y - 40, day_clock() + "   " + day_phase_name(_i) + " → " +
 
 draw_set_alpha(0.5);
 draw_text(_x1, _y - 22, "drag to scrub   P pause   T hide   " +
-	string(round(gmlmcp_tunable("day_secs", 180))) + "s cycle");
+	string(round(gmlmcp_tunable("day_secs", music_cycle_secs()))) + "s cycle");
 draw_set_alpha(1);

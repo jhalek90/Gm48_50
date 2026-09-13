@@ -62,7 +62,7 @@ function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 
 	// Distance is already handled by the falloff model, so this jitter is only
 	// here to keep repeated hits from sounding stamped from the same die.
-	var _gain = global.rain_audio_gain * random_range(0.78, 1.0);
+	var _gain = global.rain_audio_gain * mix_rain() * random_range(0.78, 1.0);
 
 	audio_play_sound_at(
 		snd_drop, _ax, _ay, _az,
@@ -92,7 +92,7 @@ function rain_bed_sound(_track) {
 function rain_bed_start() {
 	global.rain_bed_playing = global.rain_bed_track;
 	global.rain_bed = audio_play_sound(
-		rain_bed_sound(global.rain_bed_track), 2, true, global.rain_bed_gain
+		rain_bed_sound(global.rain_bed_track), 2, true, global.rain_bed_gain * mix_rain()
 	);
 }
 
@@ -104,5 +104,5 @@ function rain_bed_update() {
 		return;
 	}
 	if (!audio_is_playing(global.rain_bed)) return;
-	audio_sound_gain(global.rain_bed, global.rain_bed_gain, 0);
+	audio_sound_gain(global.rain_bed, global.rain_bed_gain * mix_rain(), 0);
 }

@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_mixer",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_mixer",
+  "parent":{"name":"Audio","path":"folders/Audio.yy",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

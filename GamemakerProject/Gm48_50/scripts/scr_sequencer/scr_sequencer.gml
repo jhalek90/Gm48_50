@@ -9,6 +9,26 @@
 /// Laying the extra tracks out flat would have been less work and would have
 /// thrown away the projection the rest of the scene already agrees on.
 
+/// The tempo of the whole game, in one place.
+///
+/// 120 because that is what the rhythm tracks were recorded at. At this tempo
+/// SEQ_STEPS sixteenths come to exactly 2 seconds, which is one bar of the
+/// music, so the pattern the player builds and the track underneath it share
+/// their downbeats instead of drifting apart after the first one.
+///
+/// Changing this changes where the music can hand over — see music_bar_secs.
+#macro SEQ_BPM 120
+
+/// The instrument picker along the bottom of the screen.
+///
+/// Shared by the hit test and the drawing, so the button you can click is
+/// always the button you can see — the same arrangement the day scrubber and
+/// the volume faders use, and the reason none of the three can drift.
+#macro PICK_X      40
+#macro PICK_PITCH  84
+#macro PICK_SIZE   62
+#macro PICK_Y      (room_height - 104)
+
 #macro SEQ_STEPS 16
 #macro SEQ_TRACKS 3
 
@@ -56,6 +76,17 @@ function seq_cell_at(_mx, _my) {
 		if (_s >= 0) return { track: _t, step: _s };
 	}
 	return { track: -1, step: -1 };
+}
+
+/// Which picker button a screen position is over, or -1.
+function seq_palette_at(_mx, _my) {
+	if (_my < PICK_Y || _my > PICK_Y + PICK_SIZE) return -1;
+
+	for (var _p = 0; _p < instrument_count(); _p++) {
+		var _bx = PICK_X + _p * PICK_PITCH;
+		if (_mx >= _bx && _mx <= _bx + PICK_SIZE) return _p;
+	}
+	return -1;
 }
 
 /// Re-register everything the rain can land on.
