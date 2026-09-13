@@ -11,16 +11,31 @@
 
 /// The visible art inside a tree sprite.
 ///
-/// All five sprites are a 220px box holding 168px of tree, with 52px of empty
-/// padding above the canopy. That padding is why sizes are given below as a
-/// crown height rather than as a sprite scale: a scale multiplier scales the
-/// box, so asking for 200 gets a tree about 150 tall and every number in the
-/// table reads a quarter too big. Composing against the thing you can actually
-/// see is worth the one division in trees_draw.
+/// Tree sprites are a box with empty padding above the canopy, and sizes in
+/// the table below are given as a crown height rather than as a sprite scale:
+/// a scale multiplier scales the *box*, so asking for 200 gets a tree about
+/// 150 tall and every number in the table reads a quarter too big. Composing
+/// against the thing you can actually see is worth the one division in
+/// trees_draw.
 ///
-/// If the sprites are ever re-exported with different padding, this is the
-/// number to re-measure — nothing else here needs to change.
+/// It is per entry rather than one constant because the project now holds two
+/// families of tree with different padding — the originals carry 168 pixels of
+/// art in a 220 box, the pines 188 in a 245. One number for both would render
+/// whichever family it was not measured against about a tenth off, and it
+/// would do it silently, because a tree being slightly the wrong size looks
+/// like a composition choice rather than a bug.
+///
+/// Measured off the sprites' own alpha, not read off a design document. If a
+/// sprite is re-exported with different padding this is the number to take
+/// again, and nothing else here needs to change.
 #macro TREE_ART_H 168
+
+/// How wide a canopy is against its height, for the shadow it throws.
+///
+/// Measured off the sprites like TREE_ART_H: the pines are 130 by 188. If a
+/// rounder tree comes back this wants taking again, or moving into the table
+/// beside `art`.
+#macro TREE_ASPECT 0.7
 
 function trees_init() {
 	// Sorted far to near. Drawing in this order puts nearer trees over farther
@@ -32,43 +47,58 @@ function trees_init() {
 	// their bases land on one row and their tops on another, and the stand
 	// reads as a hedge cut out and pasted along the waterline.
 	global.trees = [
-		// Three of them, all pushed to the edges. There were five, and the two
-		// that went were the two nearest the middle of the frame — which is
-		// also the only part of the view worth keeping clear, since it is where
-		// the lake, the far range and anything moving on the water are. A stand
-		// that runs evenly across the opening is a hedge; one that holds the
-		// two sides and leaves the centre open is a window.
+		// A stand of pines, and the positions moved with the sprites.
 		//
-		// The far pair. The smaller sits behind and above, the larger in front
-		// of it and cutting across. One tree passing behind another is the
-		// strongest depth cue available here, stronger than size, because it
-		// cannot be read as the tree simply being a smaller tree — which is why
-		// these two are the pair that stayed.
-		{ spr: sprTree4504, x: 1020, z: 2.56, crown: 330, rate: 0.62, phase: 0.87 },
-
-		// The right edge, cut by the porch post and running off the frame, so
-		// the view is closed on both sides rather than only on the left.
-		{ spr: sprTree3512, x: 1288, z: 2.30, crown: 375, rate: 0.55, phase: 0.61 },
-
-		// The near tree, and the reason the list is ordered at all. Most of it
-		// is off the left edge on purpose: it frames the view and gives the eye
-		// something at arm length to read the distance of everything else
-		// against. That job matters more now than it did with five, because
-		// with the middle cleared it is the only thing left holding the left
-		// side of the frame at all.
+		// A pine is 130 wide to 188 tall where the old round trees were square
+		// — barely two thirds the width at the same crown height. The spacing
+		// that had the old pair overlapping left these two with a hundred
+		// pixels of clear air between them, and the near one all but slid off
+		// the left edge. Swapping art is never only swapping art: the previous
+		// x values were chosen against a silhouette that no longer exists.
 		//
-		// What stays on screen has to be big enough to read as one mass,
-		// because the porch post cuts across it — smaller, and the post breaks
-		// the canopy into slivers and it stops looking like a tree.
+		// `art` is how many pixels of the sprite's box are actually tree. The
+		// pines carry 188 in a 245 box; the originals carried 168 in 220.
+		//
+		// Three on the right rather than two, which is what pines want. They
+		// grow in stands and read wrongly as isolated specimens, and the fourth
+		// sprite was going spare. Each overlaps the next by twenty or thirty
+		// pixels: one tree passing behind another is the strongest depth cue
+		// available here, stronger than size, because it cannot be read as the
+		// tree simply being a smaller tree.
+		{ spr: sprTreepine4, art: 188, x:  980, z: 2.85, crown: 750, rate: 0.58, phase: 0.22 },
+		{ spr: sprTreepine2, art: 188, x: 1090, z: 2.56, crown: 825, rate: 0.62, phase: 0.87 },
+
+		// The nearest of the three, and the one the porch post cuts across, so
+		// the view is closed on the right as well as the left.
+		{ spr: sprTreepine3, art: 188, x: 1240, z: 2.30, crown: 938, rate: 0.55, phase: 0.61 },
+
+		// The near tree, and the reason the list is ordered at all. It frames
+		// the view and gives the eye something at arm length to read the
+		// distance of everything else against — a job that matters more now
+		// than it did with five trees, because with the middle cleared it is
+		// the only thing holding the left side of the frame at all.
+		//
+		// Moved in from -80 to 30. At the old x a pine this narrow reached
+		// barely thirty pixels onto the screen and framed nothing; at 30 it
+		// still runs off the left edge but arrives far enough in to read as a
+		// mass. Further in than this and it starts covering the dock.
 		//
 		// Its z is nearer than z_near, which nothing else in the scene is. That
 		// is deliberate. Its base lands below the bottom of the screen and the
 		// porch draws over it, so none of the projection is on show; pulling it
 		// back to a legal depth costs the framing and buys nothing.
-		{ spr: sprTree7766, x:  -80, z: 1.15, crown: 470, rate: 0.34, phase: 0.13 },
+		{ spr: sprTreepine1, art: 188, x:   30, z: 1.15, crown: 470, rate: 0.34, phase: 0.13 },
 	];
 
 	global.trees_time = 0;
+}
+
+/// How much of a tree sprite's box is actually tree.
+///
+/// Falls back to the old family's height, so an entry written without an `art`
+/// still behaves as it always did rather than collapsing to nothing.
+function tree_art_h(_t) {
+	return variable_struct_exists(_t, "art") ? _t.art : TREE_ART_H;
 }
 
 /// The shadows the stand drops on the bank.
@@ -85,9 +115,13 @@ function trees_shadows() {
 	for (var _i = 0; _i < array_length(_list); _i++) {
 		var _t = _list[_i];
 
-		// These canopies are about as wide as they are tall, so the crown
-		// doubles as the width and there is no second number to keep in step.
-		shadow_cast(_t.x, ground_y(_t.z), _t.crown * persp_scale(_t.z) * _size, _col, 1);
+		// The crown is a height, and a pine is narrower than it is tall — 130
+		// to 188, about seven tenths. The old round trees were square, so the
+		// crown could double as the width with no second number to keep in
+		// step; these need the aspect or every tree stands in a puddle half
+		// again as wide as itself.
+		shadow_cast(_t.x, ground_y(_t.z),
+			_t.crown * TREE_ASPECT * persp_scale(_t.z) * _size, _col, 1);
 	}
 }
 
@@ -139,7 +173,7 @@ function trees_draw(_near) {
 
 		// Crown height to sprite scale. The canopy lands at crown * persp_scale
 		// pixels tall whatever the padding around it happens to be.
-		var _s = _t.crown * persp_scale(_t.z) * _size / TREE_ART_H;
+		var _s = _t.crown * persp_scale(_t.z) * _size / tree_art_h(_t);
 
 		// The sprites are all bottom-centre origin, so the ground row from the
 		// projection is the draw position with no offset to remember.
