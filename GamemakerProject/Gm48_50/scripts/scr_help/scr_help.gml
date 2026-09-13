@@ -25,17 +25,23 @@
 
 /// The panel, hung under the row and squared off against the same right edge.
 ///
-/// 400 wide, which puts its left edge at 950. The title wordmark reaches 963,
-/// so the two overlap by 13 pixels on the title card. That is the corner of one
-/// letter behind an opaque panel and is worth less than the width the rows
-/// need.
+/// 450 wide. The key column now runs to 168 and the longest action after it is
+/// "change the time of day", 22 characters. That puts the left edge at 900 and
+/// overlaps the title wordmark, which reaches 963, by more than it used to. It
+/// is the corner of a letter behind an opaque panel, and is worth less than
+/// having the rows fit.
 #macro HELP_PAD      16
 #macro HELP_PANEL_X2 (ui_btn_x(0) + UI_BTN_SIZE)
-#macro HELP_PANEL_X1 (HELP_PANEL_X2 - 400)
+#macro HELP_PANEL_X1 (HELP_PANEL_X2 - 450)
 #macro HELP_PANEL_Y1 (HELP_Y + HELP_SIZE + 10)
 
 /// Where the action column starts, measured from the panel's left edge.
-#macro HELP_COL 118
+///
+/// 180. The longest key is "left click again" at 16 characters, which ends at
+/// 168, so this is that plus a space to read across. fntPixels is monospaced,
+/// so the column is the character count times the advance and anything less
+/// puts a key against its own action.
+#macro HELP_COL 180
 
 /// Row pitch, and how far a blank spacer row is worth.
 #macro HELP_ROW 24
@@ -51,23 +57,23 @@ function help_init() {
 	// gap. Written here rather than built in the draw so the panel's height can
 	// be measured from it and the two cannot disagree about how many rows there
 	// are.
+	// No headings. Three labels over eleven rows was a contents page for a list
+	// short enough to read in one go, and each of them named the obvious. The
+	// blank rows stay, so the groups are still apart on the page without
+	// anything having to say what they are.
 	global.help_rows = [
-		["", "THE RAILING"],
-		["1-8",       "choose an instrument"],
-		["click",     "place it on a step"],
-		["click it",  "tune it up one degree"],
-		["r-click",   "take it off"],
-		["backspace", "clear the board"],
-		["Roll",      "deal a random board"],
+		["1-8",             "pick instrument"],
+		["left click",      "place on railing"],
+		["left click again","increment note"],
+		["right click",     "remove instrument"],
+		["backspace",       "clear the railing"],
 		["", ""],
-		["", "THE PORCH"],
-		["drag sky",  "change the time of day"],
-		["sweep",     "the wind chime rings"],
-		["click",     "the duck, the lantern"],
+		["drag sky",        "change the time of day"],
+		["sweep",           "the wind chime rings"],
+		["click",           "the duck, the lantern"],
 		["", ""],
-		["", "KEYS"],
-		["T",         "hide the interface"],
-		["P",         "hold the day still"],
+		["T",               "hide interface"],
+		["P",               "keep the moment still"],
 	];
 }
 
@@ -202,15 +208,6 @@ function help_panel_draw() {
 		if (_k == "" && _a == "") continue;
 
 		var _y = HELP_PANEL_Y1 + HELP_PAD + _i * HELP_ROW;
-
-		if (_k == "") {
-			// A heading. Dimmer than the rows under it, not brighter: it is
-			// there to group them, and a bright label would be read first.
-			draw_set_colour(UI_INK);
-			draw_set_alpha(0.45);
-			draw_text(HELP_PANEL_X1 + HELP_PAD, _y, _a);
-			continue;
-		}
 
 		draw_set_colour(UI_INK);
 		draw_set_alpha(0.72);

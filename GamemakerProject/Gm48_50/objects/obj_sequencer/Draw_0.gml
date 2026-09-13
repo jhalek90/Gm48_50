@@ -182,11 +182,11 @@ draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, true);
 
 draw_set_colour(c_black);
 draw_set_alpha(0.6);
-draw_text(_dcx + 2, _by - 20, "Roll");
+draw_text(_dcx + 2, _by - 20, "random");
 
 draw_set_colour(c_white);
 draw_set_alpha(1);
-draw_text(_dcx, _by - 22, "Roll");
+draw_text(_dcx, _by - 22, "random");
 
 // The help line, under the row it describes and centred on it.
 //
