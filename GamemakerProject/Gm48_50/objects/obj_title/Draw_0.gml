@@ -1,5 +1,13 @@
 if (game_playing()) exit;
 
+// The gate comes first and covers everything, including the title card. Two
+// screens, one object: both are what the game shows before it starts, and
+// splitting them would mean two objects agreeing about whose turn it is.
+if (audio_gated()) {
+	gate_draw();
+	exit;
+}
+
 // The scene, held back rather than hidden. The rain and the lake are the thing
 // worth looking at and a title card that covers them wastes the one moment the
 // player is certain to be looking — but the sky runs from noon overcast to

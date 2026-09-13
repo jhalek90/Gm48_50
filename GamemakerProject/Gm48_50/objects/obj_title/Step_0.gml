@@ -2,6 +2,16 @@ if (game_playing()) exit;
 
 t += delta_time / 1000000;
 
+// The gate takes a click and nothing else. A keypress is not a gesture every
+// browser accepts for starting audio, and this screen exists for exactly that
+// gesture. It also swallows the click rather than passing it through, or the
+// same press would open the gate and start the game in one go, and the title
+// card would never be seen.
+if (audio_gated()) {
+	if (mouse_check_button_pressed(mb_left)) audio_ungate();
+	exit;
+}
+
 // Any key, or any button. A title that names a particular key is asking to be
 // read before the player has decided to read anything, and the answer to
 // "press any key" has to actually be any key or the line is a lie.

@@ -92,6 +92,29 @@ NOTE: the instruments are `channelFormat: 2` (3D). `sndDuck`, `sndTorch` and
 Setting them to 3D turns panning on and also applies distance falloff, which
 cuts them to about a third.
 
+## The audio gate
+
+Browsers refuse to start an audio context until the page has had a real user
+gesture. A game that starts playing on room load does not get quiet audio on
+the web, it gets a context that never starts and often stays broken for the
+rest of the session.
+
+So a click-to-start screen runs in front of the title card, and `audio_gated()`
+is false only after it. Three things start sound without being asked and each
+checks it:
+
+- the rain bed, in `rain_bed_start` and `rain_bed_update`
+- the drop plinks, in `rain_audio_hit`
+- the music, at the top of `music_step`
+
+CAUTION: anything new that makes a sound on its own, rather than because
+somebody clicked something, has to check `audio_gated()` as well. Everything
+user-triggered is safe by definition, since the gate only opens on a click.
+
+`ui_shown()` also returns false while the gate is up. The gate covers the whole
+screen, so the buttons behind it are invisible but would still take the click
+that opens it.
+
 ## Live tuning
 
 The project runs on a GML MCP bridge. `gmlmcp_tunable(name, default)` registers

@@ -27,6 +27,38 @@ function game_playing() {
 	return global.playing;
 }
 
+/// The click a browser needs before it will make a sound.
+///
+/// Every browser refuses to start an audio context until the page has had a
+/// real user gesture. A game that begins playing rain and music the instant the
+/// room loads does not get quiet audio on the web, it gets an audio context
+/// that never starts, and often stays broken for the rest of the session even
+/// after the player does click.
+///
+/// So nothing sounds until this is passed, and the only way past it is a mouse
+/// click. Not a keypress: a click is the gesture every browser accepts, and
+/// this screen has one job.
+///
+/// It sits in front of the title card rather than replacing it. The title is
+/// the game introducing itself and wants to be looked at; this is a door, and
+/// it should be got through and forgotten.
+///
+/// Three things start sound without being asked: the rain bed, the drop plinks
+/// and the music. Each checks this. Everything else in the game makes noise
+/// because somebody clicked something, which by definition is after the gate.
+function audio_gate_init() {
+	global.audio_gated = true;
+}
+
+function audio_gated() {
+	if (!variable_global_exists("audio_gated")) audio_gate_init();
+	return global.audio_gated;
+}
+
+function audio_ungate() {
+	global.audio_gated = false;
+}
+
 /// The row of buttons in the top right corner.
 ///
 /// There are three of them now — fullscreen, volume, pause — and they used to
@@ -96,6 +128,14 @@ function ui_init() {
 }
 
 function ui_shown() {
+	// Nothing while the gate is up. The gate draws over the whole screen, so
+	// the buttons behind it are invisible but would still take the click that
+	// opens the gate: one press would let the audio through and toggle whatever
+	// happened to be under the pointer. Hiding them here covers the volume
+	// panel, the controls panel and the fullscreen button in one place, because
+	// all three already ask this question.
+	if (audio_gated()) return false;
+
 	if (!variable_global_exists("ui_visible")) ui_init();
 	return global.ui_visible;
 }
@@ -190,6 +230,72 @@ function toast_draw() {
 	draw_set_colour(UI_INK);
 	draw_set_alpha(_a);
 	draw_text_transformed(_cx, _cy, global.toast_text, _s, _s, 0);
+
+	draw_set_alpha(1);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
+}
+
+// --- The gate screen -----------------------------------------------------
+
+/// Where the button sits, and how big it is.
+///
+/// Centred, and the whole rectangle is the target rather than the words in it.
+/// A player who has been told to click has been told to click somewhere, and a
+/// generous box is the difference between a game that starts and a game that
+/// appears broken.
+#macro GATE_W  340
+#macro GATE_H   88
+
+#macro GATE_X1 ((room_width  - GATE_W) * 0.5)
+#macro GATE_Y1 ((room_height - GATE_H) * 0.5)
+#macro GATE_X2 (GATE_X1 + GATE_W)
+#macro GATE_Y2 (GATE_Y1 + GATE_H)
+
+function gate_at(_mx, _my) {
+	return (_mx >= GATE_X1 && _mx <= GATE_X2 &&
+	        _my >= GATE_Y1 && _my <= GATE_Y2);
+}
+
+/// The door.
+///
+/// Solid, not a dim over the scene. The scene is the thing the title card is
+/// about to show off, and showing it through a haze here spends that twice.
+///
+/// The whole panel sits below the horizon, where shd_post takes no light
+/// sources, so the text can be plain white. See the luminance note in
+/// DEVNOTES: above that line it would have to be UI_INK.
+function gate_draw() {
+	draw_set_colour(make_colour_rgb(14, 12, 14));
+	draw_set_alpha(1);
+	draw_rectangle(0, 0, room_width, room_height, false);
+
+	var _hot = gate_at(mouse_x, mouse_y);
+
+	draw_set_colour(c_black);
+	draw_set_alpha(_hot ? 0.5 : 0.35);
+	draw_rectangle(GATE_X1, GATE_Y1, GATE_X2, GATE_Y2, false);
+
+	draw_set_colour(c_white);
+	draw_set_alpha(_hot ? 0.9 : 0.55);
+	draw_rectangle(GATE_X1, GATE_Y1, GATE_X2, GATE_Y2, true);
+
+	draw_set_halign(fa_center);
+	draw_set_valign(fa_middle);
+
+	var _msg = "click to start";
+	var _s   = gmlmcp_tunable("gate_size", 240) / max(1, string_width(_msg));
+
+	draw_set_colour(c_white);
+	draw_set_alpha(_hot ? 1 : 0.8);
+	draw_text_transformed(room_width * 0.5, room_height * 0.5, _msg, _s, _s, 0);
+
+	// Said once, small, under the button. A browser will not let a page make a
+	// sound until somebody clicks it, and a player who knows that is a player
+	// who does not think the game is silent.
+	draw_set_alpha(0.4);
+	draw_text_transformed(room_width * 0.5, GATE_Y2 + 34,
+		"your browser needs a click before it will play sound", _s * 0.55, _s * 0.55, 0);
 
 	draw_set_alpha(1);
 	draw_set_halign(fa_left);

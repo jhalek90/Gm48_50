@@ -317,6 +317,10 @@ function music_play(_index, _gain) {
 
 /// Called once per step by obj_daylight, after the clock has advanced.
 function music_step() {
+	// Silent until the player has clicked through. The bar count carries on
+	// underneath, so the track still starts on a downbeat when it does start.
+	if (audio_gated()) return;
+
 	var _gain = gmlmcp_tunable("music_gain", 0.5) * mix_music();
 	var _fade = max(0.1, gmlmcp_tunable("music_fade", 1.6));
 

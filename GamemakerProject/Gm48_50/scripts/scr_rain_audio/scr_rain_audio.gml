@@ -43,6 +43,13 @@ function rain_audio_init() {
 	audio_listener_orientation(0, 0, 1, 0, -1, 0);
 
 	global.rain_voice_budget = 0;
+
+	// No bed yet. These used to be set only by rain_bed_start, which was called
+	// straight from obj_rain's Create and so always ran. The audio gate makes
+	// it return early, so the first rain_bed_update after the player clicks
+	// through would have read an undefined global and thrown.
+	global.rain_bed         = -1;
+	global.rain_bed_playing = -1;
 }
 
 /// Pick the drops you hear, now that nothing is simulating drops.
@@ -82,6 +89,8 @@ function rain_audio_sample() {
 
 /// A drop has landed. Decide whether it is one of the ones you hear.
 function rain_audio_hit(_x, _y, _z, _scale, _kind) {
+	if (audio_gated()) return;
+
 	// TEMP: individual drop hits are off while the bed is judged on its own.
 	// Returning before the budget is spent rather than after, so the voice
 	// budget is not quietly draining against nothing while this is disabled.
@@ -139,6 +148,10 @@ function rain_bed_sound(_track) {
 /// plinks carry all the spatial information. Giving it a position would pull
 /// the whole storm to a point somewhere off the porch.
 function rain_bed_start() {
+	// Nothing before the gate. rain_bed stays -1, and obj_rain starts the bed
+	// on the first step after the player clicks through.
+	if (audio_gated()) return;
+
 	global.rain_bed_playing = global.rain_bed_track;
 	global.rain_bed = audio_play_sound(
 		rain_bed_sound(global.rain_bed_track), 2, true, global.rain_bed_gain * mix_rain()
@@ -147,6 +160,15 @@ function rain_bed_start() {
 
 /// Track the live gain, and swap recordings if the track changed.
 function rain_bed_update() {
+	if (audio_gated()) return;
+
+	// Not started yet, or stopped. Covers both the first step after the gate
+	// lifts and a bed that was never started because the gate was up.
+	if (!audio_is_playing(global.rain_bed)) {
+		rain_bed_start();
+		return;
+	}
+
 	if (global.rain_bed_track != global.rain_bed_playing) {
 		if (audio_is_playing(global.rain_bed)) audio_stop_sound(global.rain_bed);
 		rain_bed_start();
