@@ -2,8 +2,8 @@
 ///
 /// Everything in the scene is placed by a depth `z` — distance from the person
 /// sitting on the porch, in arbitrary units where the railing sits at about 1.7
-/// and the far shore at 36. One projection serves the rain, the splashes and
-/// later the instruments, so they never disagree about where the ground is.
+/// and the far shore at 36. One projection serves the rain, the trees and the
+/// instruments, so they never disagree about where the ground is.
 ///
 /// The ground at depth z is drawn at `horizon + ground_k / z`. That 1/z is the
 /// whole illusion: distant rain compresses into a thin band just under the

@@ -15,7 +15,6 @@ global.persp_cloud_k   = 900;
 global.persp_z_near    = 1.7;
 global.persp_z_far     = 36;
 global.rain_depth_bias = 1.0;
-global.rain_splashes   = [];
 
 // --- Audio ----------------------------------------------------------------
 global.rain_audio_gain  = 0.55;
@@ -29,8 +28,8 @@ rain_bed_start();
 
 // --- Surfaces that catch rain --------------------------------------------
 // The railing occupies a thin slice of depth, so only the drops inside that
-// slice strike it. That is what produces the line of splashes running along
-// the top rail while the rain on either side of it carries on to the ground.
+// slice strike it. That is what puts a line of ticking along the top rail
+// while the rain on either side of it carries on down to the ground.
 surface_add(RAIL_Z_NEAR, RAIL_Z_FAR, -140, room_width + 140, RAIL_Y, "wood");
 
 drops = [];

@@ -1,3 +1,8 @@
+// The ledges, the playhead, the picker and the faders are the game's
+// interface, and the title card is the one moment the scene is meant to be
+// looked at on its own.
+if (!game_playing()) exit;
+
 var _cell = seq_cell_at(mouse_x, mouse_y);
 // Distance hazes toward the water behind it, so the far ledges recede into
 // whatever colour the lake is at this hour instead of a fixed dusk blue.

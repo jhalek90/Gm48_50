@@ -1,7 +1,7 @@
 /// The step sequencer: objects stood on three ledges, struck by one playhead.
 ///
-/// Drawn in front of the porch (-100) and the porch splashes (-110), because
-/// the objects sit on top of the ledges rather than behind them.
+/// Drawn in front of the porch (-100), because the objects sit on top of the
+/// ledges rather than behind them.
 depth = -120;
 
 // Bars completed since the room started. The music controller watches this to

@@ -5,6 +5,8 @@
 /// behind them because the deck is wood grain and white text on grain is hard
 /// to read at any hour.
 
+if (!game_playing()) exit;
+
 var _x1 = MIX_X1;
 var _x2 = MIX_X2;
 

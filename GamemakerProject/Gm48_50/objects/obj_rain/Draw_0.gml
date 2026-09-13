@@ -56,7 +56,3 @@ for (var _i = 0; _i < _fat_n; _i++) {
 	draw_line_width(_f[0], _f[1], _f[2], _f[3], 2);
 }
 draw_set_alpha(1);
-
-// Splashes out in the scene. The railing's own splashes are drawn by
-// obj_rain_front, in front of the railing they are sitting on.
-rain_draw_splashes(false);

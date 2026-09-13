@@ -4,7 +4,7 @@
 /// space like everything else here rather than on the GUI layer, because the
 /// room and the window are the same size and a second coordinate space earns
 /// nothing.
-if (!show_ui) exit;
+if (!show_ui || !game_playing()) exit;
 
 var _x1 = DAY_UI_X1;
 var _x2 = DAY_UI_X2;

@@ -2,8 +2,8 @@
 ///
 /// THIS IS THE PLACE TO CHANGE WHAT THE SCENE LOOKS LIKE. Every colour that
 /// varies with the time of day lives in the table below and nowhere else — the
-/// sky, the lake, the porch, the rain and the splashes all read `global.pal`,
-/// so retinting the whole game at one hour is an edit to one row here.
+/// sky, the lake, the porch, the trees and the rain all read `global.pal`, so
+/// retinting the whole game at one hour is an edit to one row here.
 ///
 /// Time is a single number in [0, 1) that wraps, with the three phases spaced
 /// evenly around it. Every frame the two phases either side of the current time
@@ -80,7 +80,6 @@ function daylight_init() {
 			wood:       make_colour_rgb( 88,  68,  56),
 			wood_lit:   make_colour_rgb(120,  94,  74),
 			rain:       make_colour_rgb(226, 238, 250),
-			splash:     make_colour_rgb(232, 244, 255),
 		},
 		{
 			name: "Afternoon",
@@ -109,7 +108,6 @@ function daylight_init() {
 			wood:       make_colour_rgb(102,  80,  64),
 			wood_lit:   make_colour_rgb(138, 110,  86),
 			rain:       make_colour_rgb(236, 244, 252),
-			splash:     make_colour_rgb(240, 248, 255),
 		},
 		{
 			name: "Night",
@@ -141,7 +139,6 @@ function daylight_init() {
 			wood:       make_colour_rgb( 36,  26,  22),
 			wood_lit:   make_colour_rgb( 54,  40,  32),
 			rain:       make_colour_rgb(150, 172, 200),
-			splash:     make_colour_rgb(170, 192, 216),
 		},
 	];
 

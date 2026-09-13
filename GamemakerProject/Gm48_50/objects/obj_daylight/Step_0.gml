@@ -9,14 +9,18 @@
 var _ext = gmlmcp_tunable("time_of_day", global.day_t);
 if (_ext != sent) global.day_t = day_wrap(_ext);
 
-if (keyboard_check_pressed(ord("T"))) show_ui = !show_ui;
-if (keyboard_check_pressed(ord("P"))) paused  = !paused;
+// Not on the title card. Any key starts the game there, and a player who
+// started it with T would arrive with the scrubber already hidden.
+if (game_playing()) {
+	if (keyboard_check_pressed(ord("T"))) show_ui = !show_ui;
+	if (keyboard_check_pressed(ord("P"))) paused  = !paused;
+}
 
 // --- Scrubbing -----------------------------------------------------------
 // A drag can only start on the bar, and the sequencer only acts on the frame a
 // button goes down, so dragging the clock across the ledges cannot leave a
 // trail of instruments behind it.
-if (show_ui) {
+if (show_ui && game_playing()) {
 	if (mouse_check_button_pressed(mb_left) && day_slider_hit(mouse_x, mouse_y)) {
 		dragging = true;
 	}

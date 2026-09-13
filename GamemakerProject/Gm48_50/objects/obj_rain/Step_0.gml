@@ -32,7 +32,6 @@ rain_bed_update();
 var _want  = gmlmcp_tunable("rain_count", 2000);
 var _speed = gmlmcp_tunable("rain_speed", 30);
 var _wind  = gmlmcp_tunable("rain_wind",  -4) * (0.35 + 0.9 * wind_strength());
-var _life  = gmlmcp_tunable("splash_life", 18);
 var _rate  = gmlmcp_tunable("audio_rate", 14);
 
 // Voices are earned over time, not per frame, so the plinks stay evenly spread
@@ -54,15 +53,10 @@ for (var _i = 0, _n = array_length(drops); _i < _n; _i++) {
 	_d.y += _speed * _s;
 	_d.x += _wind * _s;
 
+	// A drop that arrives is heard and then reused. It used to leave a mark as
+	// well — see scr_rain for why it no longer does.
 	if (_d.y >= _d.land) {
-		rain_add_splash(_d.x, _d.land, _s, _d.kind);
 		rain_audio_hit(_d.x, _d.land, _d.z, _s, _d.kind);
 		drops[_i] = rain_new_drop(false);
 	}
-}
-
-var _sp = global.rain_splashes;
-for (var _i = array_length(_sp) - 1; _i >= 0; _i--) {
-	_sp[_i].t += 1;
-	if (_sp[_i].t >= _life) array_delete(_sp, _i, 1);
 }

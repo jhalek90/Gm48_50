@@ -12,16 +12,18 @@
 /// putting it in while there are six.
 application_surface_draw_enable(false);
 
-// The game's one font, set once.
+// The interface font, set once.
 //
 // Unlike colour, alpha and alignment — which every draw event here sets for
-// itself, because they change from line to line — the font never changes:
-// there is one in the project and everything that draws text wants it. Setting
-// it at each call site would be four copies of a decision nobody is going to
-// make differently, and the day a second font arrives is the day it deserves
-// to be set where it is used. It lives beside the render path rather than in a
-// controller because both are the same kind of thing: how the game draws, said
-// once, before anything draws.
+// itself, because they change from line to line — the font barely changes:
+// every piece of interface in the game wants this one, and setting it at each
+// call site would be four copies of a decision nobody is going to make
+// differently. The title card is the single exception, and it does what that
+// earns — sets fntLogo where it is used and puts this back afterwards.
+//
+// It lives beside the render path rather than in a controller because both are
+// the same kind of thing: how the game draws, said once, before anything
+// draws.
 draw_set_font(fntPixels);
 
 // Looked up once, not per frame.

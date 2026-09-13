@@ -4,13 +4,20 @@
 // if the pointer slides off it. Releasing anywhere ends it. Without the first
 // rule a click anywhere on the porch would grab whichever fader was nearest;
 // without the second, a fast drag would drop the handle halfway across.
-if (mouse_check_button_pressed(mb_left)) {
-	dragging = mixer_row_at(mouse_x, mouse_y);
-}
-if (!mouse_check_button(mb_left)) dragging = -1;
+//
+// Not on the title card, where the faders are not drawn and the click that
+// starts the game would otherwise grab whichever one it happened to land on.
+if (game_playing()) {
+	if (mouse_check_button_pressed(mb_left)) {
+		dragging = mixer_row_at(mouse_x, mouse_y);
+	}
+	if (!mouse_check_button(mb_left)) dragging = -1;
 
-if (dragging >= 0) {
-	global.mix[dragging] = mixer_value_at(mouse_x);
+	if (dragging >= 0) {
+		global.mix[dragging] = mixer_value_at(mouse_x);
+	}
+} else {
+	dragging = -1;
 }
 
 // Master is the one fader the engine applies for us, and it is the only way to
