@@ -26,7 +26,15 @@
 /// the volume faders use, and the reason none of the three can drift.
 #macro PICK_PITCH  84
 #macro PICK_SIZE   62
-#macro PICK_Y      (room_height - 104)
+/// 104 from the bottom while the help line ran underneath the row. That line
+/// is in the controls panel now, so the 42 pixels it held are free and the
+/// cluster drops into them: the names sit above the buttons, so nothing below
+/// the row needs the space any more.
+///
+/// 78 leaves the bottom border 16 pixels off the edge of the screen. It also
+/// puts the names on the deck rather than on the grass band above it, which is
+/// a flat surface to read a word against instead of a moving one.
+#macro PICK_Y      (room_height - 78)
 
 /// How far in front of the scene a strike effect is drawn.
 ///

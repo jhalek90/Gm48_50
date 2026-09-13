@@ -216,7 +216,15 @@ function help_panel_draw() {
 		draw_set_alpha(0.72);
 		draw_text(HELP_PANEL_X1 + HELP_PAD, _y, _k);
 
-		draw_set_colour(c_white);
+		// UI_INK, not white. This panel runs from y 60 to about 484, so most of
+		// its rows sit above the horizon at 300 and inside the band shd_post
+		// takes light sources from. White text here threw a legible copy of
+		// itself across the panel.
+		//
+		// The instrument labels and the bottom help line can be pure white
+		// because they are below the floor. Height decides it, not the fact
+		// that a thing is interface.
+		draw_set_colour(UI_INK);
 		draw_set_alpha(1);
 		draw_text(HELP_PANEL_X1 + HELP_PAD + HELP_COL, _y, _a);
 	}
