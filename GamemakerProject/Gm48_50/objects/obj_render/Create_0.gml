@@ -12,6 +12,18 @@
 /// putting it in while there are six.
 application_surface_draw_enable(false);
 
+// The game's one font, set once.
+//
+// Unlike colour, alpha and alignment — which every draw event here sets for
+// itself, because they change from line to line — the font never changes:
+// there is one in the project and everything that draws text wants it. Setting
+// it at each call site would be four copies of a decision nobody is going to
+// make differently, and the day a second font arrives is the day it deserves
+// to be set where it is used. It lives beside the render path rather than in a
+// controller because both are the same kind of thing: how the game draws, said
+// once, before anything draws.
+draw_set_font(fntPixels);
+
 // Looked up once, not per frame.
 u_levels      = shader_get_uniform(shd_post, "u_levels");
 u_light       = shader_get_uniform(shd_post, "u_light");

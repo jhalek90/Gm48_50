@@ -11,8 +11,14 @@ global.seq_bar = 0;
 
 instruments_init();
 tracks_init();
+notepuff_init();
 
 selected = 0;
+
+// The face the randomiser is showing. Rolled again on every deal, so the
+// button answers the click even on the deal that comes back looking like the
+// board you already had.
+dice_face = irandom_range(1, 6);
 
 // One row of steps per track. Nested rather than flat so a row can be read,
 // cleared or reasoned about on its own.
@@ -37,9 +43,9 @@ for (var _t = 0; _t < SEQ_TRACKS; _t++) {
 	}
 }
 
-// One playhead for all three tracks, so a step can fire up to three objects
-// together. That is the point of the extra rows: chords, not three unrelated
-// loops drifting against each other.
+// One playhead. It sweeps however many tracks there are, so a step fires all
+// of their objects on the same tick rather than each row keeping its own clock
+// — which is what would let rows drift against each other if more come back.
 playhead = SEQ_STEPS - 1;
 acc = 0;
 

@@ -92,12 +92,107 @@ function music_roll_notes() {
 	return _out;
 }
 
+/// Which of the six an object is sounding right now, as an index into its set.
+///
+/// The clock answers this, not the object, so every placed thing is reading
+/// the same position in the day — and a note being played and a click that
+/// retunes it can never land on different entries of the same set.
+function music_note_index() {
+	return day_phase_index() * MUSIC_SECTIONS + music_section();
+}
+
 /// Which of those six an object should be sounding right now.
 function music_note_now(_notes) {
 	if (!is_array(_notes)) return 0;
 
-	var _i = day_phase_index() * MUSIC_SECTIONS + music_section();
+	var _i = music_note_index();
 	return (_i >= 0 && _i < array_length(_notes)) ? _notes[_i] : 0;
+}
+
+/// Where a semitone sits in a pool, as a scale degree, or -1 if it is not one.
+function music_degree_of(_pool, _semi) {
+	for (var _i = 0; _i < array_length(_pool); _i++) {
+		if (_pool[_i] == _semi) return _i;
+	}
+	return -1;
+}
+
+/// Tune a placed object up one degree of the scale it is currently in.
+///
+/// The note block idiom: one click, one step up, wrapping off the top back to
+/// the bottom. It walks the pool by degree rather than by semitone, because
+/// the pool is a scale — stepping by semitone would hand out the notes between
+/// its degrees, which is every note the key does not contain.
+///
+/// Only the entry for the current phase and half is touched, which is the one
+/// the player can hear. The other five keep what they were rolled, so a tuning
+/// made at noon does not silently rewrite the parts of the day nobody is
+/// listening to — and so the note the player just landed on is theirs until
+/// the track hands over, at which point the object returns to its own key.
+///
+/// Mutates the array it is handed. GML arrays are references and the caller
+/// holds the object's own set, which is the point: there is nowhere else the
+/// change would need to be written back to. Returns the semitone it landed on,
+/// which is all a caller needs — what that note looks like is music_note_look.
+function music_note_bump(_notes) {
+	var _pool = music_scale(day_phase_index(), music_section());
+	var _n    = array_length(_pool);
+	var _i    = music_note_index();
+
+	if (!is_array(_notes) || _i < 0 || _i >= array_length(_notes)) return _pool[0];
+
+	// A note that is not in the pool means the key moved under it. Start the
+	// walk at the bottom rather than guessing where it would have been.
+	var _d    = music_degree_of(_pool, _notes[_i]);
+	var _next = (_d < 0) ? 0 : (_d + 1) mod _n;
+
+	_notes[_i] = _pool[_next];
+	return _pool[_next];
+}
+
+/// The colour of a scale degree.
+///
+/// Hue walks the scale, so the seven degrees come out as seven readable
+/// colours and a given degree is the same colour in every key. That is what
+/// makes showing it worth anything: it says where in the scale the note landed
+/// without the player having to count clicks from the bottom.
+///
+/// Stopped short of a full turn of the wheel — run the hue the whole way round
+/// and the top degree comes back to the red the bottom one started on.
+function music_degree_colour(_degree, _steps) {
+	var _n = max(1, _steps);
+	return make_colour_hsv((_degree / _n) * 200, 190, 255);
+}
+
+/// What a note looks like when it is shown: its colour and its name.
+///
+/// The single place that turns a semitone into a picture, so a note thrown by
+/// the playhead and the same note thrown by a click cannot come out looking
+/// like two different things. The degree is read back out of the pool rather
+/// than carried around beside the note, because the note is the only thing
+/// anything else stores — and the pool it belongs to is whatever the clock
+/// says it is at the moment of the strike.
+function music_note_look(_semi) {
+	var _pool = music_scale(day_phase_index(), music_section());
+
+	// Not in the pool means the tables were edited under a placed object. Show
+	// it as the root rather than refusing to draw it: the colour is a hint, and
+	// a wrong hint is better than a note that silently stops appearing.
+	var _d = max(0, music_degree_of(_pool, _semi));
+
+	return {
+		colour: music_degree_colour(_d, array_length(_pool)),
+		label:  music_note_name(_semi),
+	};
+}
+
+/// A semitone offset from D, named.
+function music_note_name(_semi) {
+	var _names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+	// D is the third pitch class, and these offsets run either side of zero, so
+	// the modulo has to survive a negative.
+	return _names[((2 + _semi) mod 12 + 12) mod 12];
 }
 
 function music_init() {
@@ -115,10 +210,22 @@ function music_init() {
 	// falls at the end of a piece instead of somewhere in its middle — and if
 	// the tracks are ever replaced with longer ones, the cycle follows on its
 	// own rather than needing a number edited here.
-	var _longest = 0;
-	for (var _i = 0; _i < array_length(global.music_tracks); _i++) {
-		_longest = max(_longest, audio_sound_length(global.music_tracks[_i]));
+	// The median length, not the longest.
+	//
+	// Taking the longest let one bad export stretch the entire day: the
+	// afternoon recording came back at 128 seconds where the other two were
+	// 64, its second half being nothing but silence, and the cycle obligingly
+	// doubled to fit it — so every phase ran twice as long and the afternoon
+	// sat in a minute of dead air. The median cannot be dragged by a single
+	// outlier in either direction, which is the property worth having when the
+	// tracks are still being re-exported.
+	var _lens = array_create(array_length(global.music_tracks), 0);
+	for (var _i = 0; _i < array_length(_lens); _i++) {
+		_lens[_i] = audio_sound_length(global.music_tracks[_i]);
 	}
+	array_sort(_lens, true);
+
+	var _longest = _lens[array_length(_lens) div 2];
 
 	// Falls back if the runtime will not report a length for an asset.
 	if (_longest <= 1) _longest = 64;
@@ -148,7 +255,7 @@ function music_init() {
 /// SEQ_STEPS sixteenths at the current tempo. This is the unit the music has to
 /// agree with, because it is the unit the player hears their own pattern in.
 function music_bar_secs() {
-	return SEQ_STEPS * 60 / (max(20, gmlmcp_tunable("bpm", SEQ_BPM)) * 4);
+	return SEQ_STEPS * 60 / (max(20, gmlmcp_tunable("bpm", SEQ_BPM)) * SEQ_DIV);
 }
 
 /// How long a full day should be for the music to fit it exactly.

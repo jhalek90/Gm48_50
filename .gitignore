@@ -1,1 +1,6 @@
 standard.md
+
+# GameMaker keeps the previous generation of a regenerated resource beside the
+# new one. Build leftovers, not source.
+*.old.yy
+*.old.png

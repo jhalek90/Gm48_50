@@ -24,9 +24,18 @@
 
 /// Where the debug scrubber sits. Shared by the hit test and the drawing so
 /// the bar you can grab is always the bar you can see.
+///
+/// Hung under the porch roof. The roof is dark boards from the top of the
+/// screen down to the fascia at 112, and it is the one wide band of the
+/// picture with nothing happening in it — so a panel there covers no scene,
+/// and the whole of the view between the rail and the horizon stays clear.
+/// Everything is measured off DAY_UI_Y: the readout sits 40 and 22 above the
+/// bar and the phase names 6 below it, and the panel drawn in obj_daylight is
+/// sized to end on the fascia line. Moving this number moves all of it, but
+/// much past 60 and the panel starts hanging below the roof into the sky.
 #macro DAY_UI_X1 40
 #macro DAY_UI_X2 560
-#macro DAY_UI_Y  150
+#macro DAY_UI_Y  52
 #macro DAY_UI_H  14
 
 /// The three keys of the cycle.

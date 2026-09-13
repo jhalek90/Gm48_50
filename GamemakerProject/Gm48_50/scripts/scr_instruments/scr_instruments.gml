@@ -20,6 +20,24 @@
 /// `register` is what survives of the old per-instrument pitch: a semitone
 /// offset added on top of the note. It is zero for everything except where two
 /// instruments share one recording and need telling apart.
+///
+/// `tune` is different, and the two must not be confused. Register says which
+/// octave an instrument should sit in; tune corrects the recording so that
+/// asking for a D gets a D that agrees with the backing track.
+///
+/// Measured, not guessed — by harmonic product spectrum, because the obvious
+/// methods get this wrong in opposite directions: autocorrelation locks onto
+/// subharmonics and a raw spectral peak finds the loudest partial, which for
+/// the triangle is its fifth harmonic and reads as F# when the fundamental is
+/// a perfectly good D.
+///
+/// The reference is the MUSIC, not concert pitch. All three rhythm tracks were
+/// recorded about 10 cents flat of A=440 (-9.2, -10.2, -11.7), while the
+/// samples sit at or slightly above it. Each one alone is within a few cents of
+/// correct and sounds fine on its own; against the track the gap opens to
+/// twenty-odd cents, which on a guitar or piano note ringing for the better
+/// part of a second is heard as beating rather than as pitch. Tuning to the
+/// track rather than to a tuner is what makes them sit down in the mix.
 
 /// The shape of a vessel, as half-width at a given height.
 ///
@@ -36,10 +54,11 @@
 /// different games.
 
 /// One row of the table.
-function instrument(_name, _sound, _register, _gain, _colour, _profile, _rim) {
+function instrument(_name, _sound, _tune, _register, _gain, _colour, _profile, _rim) {
 	return {
 		name: _name,
 		sound: _sound,
+		tune: _tune,
 		register: _register,
 		profile: _profile,
 		/// Whether the top of the profile is an opening. A bucket and a bowl
@@ -59,11 +78,11 @@ function instruments_init() {
 		// beside: it rings for three quarters of a second where a bucket knock
 		// is gone in a fifth, and at equal peak the longer note is far the
 		// louder thing in the mix.
-		instrument("Bucket",  snd_guitar_d, 0, 0.52, make_colour_rgb(150, 166, 178),
+		instrument("Bucket",  snd_guitar_d, -0.23,  0, 0.52, make_colour_rgb(150, 166, 178),
 			[[0.00, 0.50], [1.00, 0.34]], true),
 
 		// Wide and shallow, sitting low in its box with a rounded foot.
-		instrument("Bowl",    snd_glass,   0, 0.64, make_colour_rgb(216, 198, 166),
+		instrument("Bowl",    snd_glass,    -0.09,  0, 0.64, make_colour_rgb(216, 198, 166),
 			[[0.42, 0.50], [0.62, 0.47], [0.88, 0.33], [1.00, 0.16]], true),
 
 		// Near enough a cylinder. The slight taper is what stops it reading as
@@ -74,16 +93,21 @@ function instruments_init() {
 		// lower than the hat it replaced because it rings for most of a second
 		// where the hat was gone in a quarter of one — at equal peak that is a
 		// far louder thing in the mix.
-		instrument("Tin",     snd_piano_d, 0, 0.40, make_colour_rgb(178, 188, 180),
+		instrument("Tin",     snd_piano_d,  -0.15,  0, 0.40, make_colour_rgb(178, 188, 180),
 			[[0.00, 0.38], [1.00, 0.35]], true),
 
 		// Bulged at the waist and drawn in at both ends, which is the whole of
 		// what makes a barrel a barrel.
-		instrument("Barrel",  snd_drop,    0, 0.84, make_colour_rgb(150, 104,  62),
+		//
+		// The drop recording is an E, nearly 2.5 semitones above the track, so
+		// it is pulled back down here. It is a water plink and its pitch glides as it
+		// decays -- 332 Hz down to 316 and back up -- so it will never sit
+		// perfectly; this tunes the steady part, which is what the ear takes.
+		instrument("Barrel",  snd_drop,     -2.47,  0, 0.84, make_colour_rgb(150, 104,  62),
 			[[0.00, 0.35], [0.50, 0.48], [1.00, 0.35]], false),
 
 		// Barely off the ground and nearly as wide as its box.
-		instrument("Tray",    snd_hat1,    0, 0.95, make_colour_rgb(118, 132, 146),
+		instrument("Tray",    snd_hat1,      0.00,  0, 0.95, make_colour_rgb(118, 132, 146),
 			[[0.64, 0.50], [1.00, 0.46]], true),
 
 		// The barrel's recording, two octaves down. Sharing one sample and
@@ -95,12 +119,12 @@ function instruments_init() {
 		// gain than the barrel even though resampling leaves the RMS alone: a
 		// note that rings for three quarters of a second sits in the mix very
 		// differently from one gone in a fifth.
-		instrument("Pitcher", snd_drop, -24, 0.62, make_colour_rgb(228, 226, 214),
+		instrument("Pitcher", snd_drop,     -2.47,-24, 0.62, make_colour_rgb(228, 226, 214),
 			[[0.00, 0.17], [0.22, 0.21], [0.52, 0.47], [0.82, 0.44], [1.00, 0.29]], true),
 
 		// Hung from a point and flaring to a skirt. Closed at the top, so no
 		// rim: there is nothing to look into.
-		instrument("Bell",    snd_bell,    0, 0.66, make_colour_rgb(214, 172,  88),
+		instrument("Bell",    snd_bell,     -0.18,  0, 0.66, make_colour_rgb(214, 172,  88),
 			[[0.06, 0.09], [0.16, 0.16], [0.42, 0.25], [0.72, 0.37], [0.92, 0.49], [1.00, 0.49]], false),
 
 		// A long narrow neck, a shoulder that flares fast, then straight sides.
@@ -111,7 +135,12 @@ function instruments_init() {
 		// Appended rather than slotted in beside the bowl, glass though it is:
 		// inserting it would renumber every key after it, and the picker keys
 		// are muscle memory by now.
-		instrument("Bottle",  snd_triangle_d, 0, 0.50, make_colour_rgb(116, 164, 138),
+		// Gain set from the other glass rather than from the set mean. The RMS
+		// rule would say 0.81, but it takes no account of how long a thing
+		// rings, and this one rings for a full second — the bowl, which is the
+		// same material and nearly the same RMS, was hand-balanced to 0.64, and
+		// matching its treatment puts the two pieces of glass in the same room.
+		instrument("Bottle",  snd_glass2,   -0.01, 0, 0.67, make_colour_rgb(116, 164, 138),
 			[[0.00, 0.10], [0.26, 0.10], [0.31, 0.17], [0.43, 0.31], [0.58, 0.33], [1.00, 0.31]], true),
 	];
 }
@@ -142,6 +171,6 @@ function instrument_play(_index, _screen_x, _screen_y, _z, _note) {
 		// The note this slot rolled, plus whatever register the instrument sits
 		// in. Semitones are the authoring unit and the ratio is derived: a
 		// hand-written 1.1892 is arithmetic nobody can check by eye.
-		_d.gain * mix_sfx(), undefined, power(2, (_d.register + _note) / 12)
+		_d.gain * mix_sfx(), undefined, power(2, (_d.tune + _d.register + _note) / 12)
 	);
 }

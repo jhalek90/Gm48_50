@@ -71,6 +71,11 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 	}
 }
 
+// The notes coming off anything just tuned. Drawn after the ledges so a note
+// rises in front of the objects either side of the one that threw it, and
+// before the palette, which is interface and belongs over everything.
+notepuff_draw();
+
 // --- Palette -------------------------------------------------------------
 // Laid out on a pitch wide enough for the longest name. Sized to the boxes
 // instead, the labels run into each other.
@@ -111,9 +116,33 @@ for (var _p = 0; _p < instrument_count(); _p++) {
 	draw_set_alpha(_on ? 0.95 : 0.5);
 	draw_text(_cx, _by + _bw + 5, _pd.name);
 }
+
+// The randomiser, on the end of the same row and in the same box, because it
+// is reached for in the same moment and with the same hand. It has no selected
+// state — it is a thing you do, not a thing you are holding — so it only ever
+// draws hot or cold.
+var _dx   = seq_dice_x();
+var _dcx  = _dx + _bw * 0.5;
+var _dhot = seq_dice_at(mouse_x, mouse_y);
+
+draw_set_alpha(_dhot ? 0.18 : 0.10);
+draw_set_colour(c_black);
+draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, false);
+
+dice_draw(_dcx, _by + _bw * 0.5, _bw - 14, dice_face,
+	make_colour_rgb(226, 222, 210), make_colour_rgb(52, 44, 40), _dhot ? 1 : 0.55);
+
+draw_set_colour(_dhot ? c_white : c_black);
+draw_set_alpha(_dhot ? 0.7 : 0.55);
+draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, true);
+
+draw_set_colour(c_white);
+draw_set_alpha(_dhot ? 0.95 : 0.5);
+draw_text(_dcx, _by + _bw + 5, "Roll");
+
 draw_set_halign(fa_left);
 
 draw_set_colour(c_white);
 draw_set_alpha(0.7);
-draw_text(40, _by - 26, "1-" + string(instrument_count()) + " pick   LMB place   RMB remove   Backspace clear   " + string(round(gmlmcp_tunable("bpm", SEQ_BPM))) + " BPM");
+draw_text(40, _by - 26, "1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear   " + string(round(gmlmcp_tunable("bpm", SEQ_BPM))) + " BPM");
 draw_set_alpha(1);

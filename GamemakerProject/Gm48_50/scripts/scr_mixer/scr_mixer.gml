@@ -32,10 +32,23 @@
 #macro MIX_H    12
 
 function mixer_init() {
-	// Defaults chosen so the scene sounds as it did before there were faders:
-	// full master, and the other two at unity over the gains already tuned in
-	// obj_rain and scr_instruments.
+	// The mix the game opens on, not a neutral one.
+	//
+	// Unity everywhere was where the faders started, but it is not the balance
+	// the scene wants: the rain is a wall of sound covering the whole frame and
+	// the objects are what the player is actually listening for, and at equal
+	// gain the rain wins. Pulled back to a quarter it becomes the room the
+	// instruments are standing in, which is what it is for. The objects come
+	// down a little as well, so there is headroom above them on the fader for
+	// a player who wants them loud.
+	//
+	// These are starting positions, not limits. Anything here is a judgement
+	// about the first thirty seconds; the faders are what the rest of it is
+	// for.
 	global.mix = array_create(MIX_COUNT, 1.0);
+
+	global.mix[MIX_RAIN] = 0.25;
+	global.mix[MIX_SFX]  = 0.80;
 
 	global.mix_names = ["Master", "Music", "Rain", "Objects"];
 }

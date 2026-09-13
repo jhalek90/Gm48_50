@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_notepuff",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_notepuff",
+  "parent":{"name":"Gm48_50","path":"Gm48_50.yyp",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

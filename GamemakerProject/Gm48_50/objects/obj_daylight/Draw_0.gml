@@ -11,11 +11,17 @@ var _x2 = DAY_UI_X2;
 var _y  = DAY_UI_Y;
 var _h  = DAY_UI_H;
 
-// Panel behind it, so the readout stays legible against a bright noon sky as
-// well as a dark one.
+// Panel behind it. The roof it hangs on is already dark, but the timber has
+// grain and plank seams running through it and white text on grain is no
+// easier to read up here than it is on the deck.
+//
+// The bottom edge is cut to land on the seam at 96, where the roof boards end
+// and the fascia begins, rather than at a comfortable margin below the phase
+// names: sitting the panel exactly within the boards is what makes it read as
+// part of the porch instead of as a box floating in front of it.
 draw_set_colour(c_black);
 draw_set_alpha(0.5);
-draw_rectangle(_x1 - 16, _y - 46, _x2 + 16, _y + _h + 38, false);
+draw_rectangle(_x1 - 16, _y - 46, _x2 + 16, _y + _h + 30, false);
 draw_set_alpha(1);
 
 // The bar is painted with the cycle it controls: each slice is the sky at the
@@ -68,7 +74,11 @@ var _pct = string(floor(day_phase_progress() * 100));
 
 draw_set_colour(c_white);
 draw_set_alpha(0.9);
-draw_text(_x1, _y - 40, day_clock() + "   " + day_phase_name(_i) + " → " +
+// Written "to" rather than as an arrow. fntPixels does not carry an arrow
+// character, and it does not carry ">" either — its set is ASCII less <, >, ^,
+// ` and ~ — so both spellings draw as an empty box. Anything added to this
+// line wants checking against that set.
+draw_text(_x1, _y - 40, day_clock() + "   " + day_phase_name(_i) + " to " +
 	day_phase_name(_i + 1) + "  " + _pct + "%" + (paused ? "   [paused]" : ""));
 
 draw_set_alpha(0.5);

@@ -1,13 +1,13 @@
 /// Where the sequencer's steps sit in the scene.
 ///
-/// Three tracks, laid out by depth rather than stacked flat. The railing runs
-/// across the view so time reads as horizontal distance, and the further tracks
-/// are ledges further out in the rain: higher up the screen, drawn smaller, and
-/// heard from further away through the same audio space the rain uses. One
-/// playhead sweeps all three, so a step can fire up to three objects at once.
+/// One track: the porch railing, running across the view so time reads as
+/// horizontal distance. It is a real surface the scene already has — the rain
+/// lands on it and obj_porch draws it — rather than a strip of interface laid
+/// over the picture.
 ///
-/// Laying the extra tracks out flat would have been less work and would have
-/// thrown away the projection the rest of the scene already agrees on.
+/// Everything below is written for any number of tracks, and was three of them
+/// at ledges further out in the rain. That is a table edit away if it comes
+/// back: the loops, the hit tests and the rain registration never assumed one.
 
 /// The tempo of the whole game, in one place.
 ///
@@ -29,8 +29,21 @@
 #macro PICK_SIZE   62
 #macro PICK_Y      (room_height - 104)
 
-#macro SEQ_STEPS 16
-#macro SEQ_TRACKS 3
+/// How many steps a loop has, and how they divide the beat.
+///
+/// Eight eighth-notes, so a loop comes to exactly one bar of the music at
+/// SEQ_BPM. That relationship is what the music handover depends on — see
+/// music_bar_secs — so the two move together: halving the steps without
+/// halving the division would make a loop half a bar, and every track would
+/// hand over on an offbeat.
+///
+/// It was sixteen sixteenths, which came to the same two seconds.
+#macro SEQ_STEPS 8
+#macro SEQ_DIV   2
+/// Must match the length of the table in tracks_init below. The two are kept
+/// apart because a macro is what the arrays and loops are sized from, and a
+/// table is what a person edits.
+#macro SEQ_TRACKS 1
 
 /// The tracks, front to back.
 ///
@@ -40,14 +53,17 @@
 /// `z` is the depth the audio and the rain use; `size` is how big an object
 /// standing there reads, which shrinks with distance.
 function tracks_init() {
-	// The y values are spaced so no row's objects reach into the ledge above
-	// it. A row is `size` tall and stands on its own y, so each gap is the
-	// next y minus this one minus that row's size — keep a few pixels in hand
-	// or the rows read as one cluttered band instead of three distances.
+	// Drawn from the shared RAIL_Y and RAIL_Z, so the row the player puts
+	// objects on is the same railing the rain is told to land on and the porch
+	// is told to draw. Three numbers agreeing by accident is a bug that looks
+	// like an art problem.
+	//
+	// If more rows come back, they go here: y values spaced so no row's objects
+	// reach into the one above it, since a row is `size` tall and stands on its
+	// own y. The pair that used to sit here were { z: 2.7, y: 398, size: 34 }
+	// and { z: 3.9, y: 356, size: 25 }.
 	global.tracks = [
 		{ z: RAIL_Z, y: RAIL_Y, x1: 132, x2: 1234, size: 46 },
-		{ z: 2.7,    y: 398,    x1: 196, x2: 1170, size: 34 },
-		{ z: 3.9,    y: 356,    x1: 248, x2: 1118, size: 25 },
 	];
 }
 
@@ -87,6 +103,119 @@ function seq_palette_at(_mx, _my) {
 		if (_mx >= _bx && _mx <= _bx + PICK_SIZE) return _p;
 	}
 	return -1;
+}
+
+/// The left edge of the randomiser, one pitch past the last instrument.
+///
+/// Derived rather than written down, so the button follows the palette along
+/// when an instrument is added instead of ending up underneath one.
+function seq_dice_x() {
+	return PICK_X + instrument_count() * PICK_PITCH;
+}
+
+/// Is this screen position on the randomiser?
+function seq_dice_at(_mx, _my) {
+	var _bx = seq_dice_x();
+	return (_mx >= _bx && _mx <= _bx + PICK_SIZE &&
+	        _my >= PICK_Y && _my <= PICK_Y + PICK_SIZE);
+}
+
+/// Throw the whole board away and deal a new one.
+///
+/// Every step is rolled on its own: an instrument, or nothing. The gaps are
+/// what make it a pattern rather than a wall — a board where every step sounds
+/// has no rhythm in it, only tempo — so the fill chance is well under one and
+/// is a tunable, because how busy is right is a thing you judge by listening.
+///
+/// Notes are rolled for everything it places, exactly as placing by hand does,
+/// so a dealt board follows the day round the same way a built one does.
+///
+/// Mutates the arrays it is handed, which are the sequencer's own.
+function seq_randomise(_slots, _notes) {
+	var _n    = instrument_count();
+	var _fill = clamp(gmlmcp_tunable("dice_fill", 0.5), 0, 1);
+	var _any  = false;
+
+	for (var _t = 0; _t < SEQ_TRACKS; _t++) {
+		for (var _i = 0; _i < SEQ_STEPS; _i++) {
+			if (random(1) < _fill) {
+				_slots[_t][_i] = irandom(_n - 1);
+				_notes[_t][_i] = music_roll_notes();
+				_any = true;
+			} else {
+				_slots[_t][_i] = -1;
+			}
+		}
+	}
+
+	// An all-misses deal is rare and reads as a broken button rather than as
+	// bad luck, so one step is always given something.
+	if (!_any) {
+		var _t = irandom(SEQ_TRACKS - 1);
+		var _i = irandom(SEQ_STEPS - 1);
+		_slots[_t][_i] = irandom(_n - 1);
+		_notes[_t][_i] = music_roll_notes();
+	}
+}
+
+/// A die, in blocks.
+///
+/// Drawn rather than given a sprite, for the same reason the instruments are:
+/// it has to sit in a row with eight things made of snapped bars and share
+/// their grid, and a die is six pips and a square.
+function dice_draw(_cx, _cy, _size, _face, _colour, _pip, _alpha) {
+	var _half   = _size * 0.5;
+	var _corner = max(2, round(_size / 8));
+
+	draw_set_alpha(_alpha);
+	draw_set_colour(_colour);
+
+	// Two overlapping rectangles, each inset on one axis. That is a square
+	// with its corners knocked off, which is as round as the rest of this
+	// scene ever gets.
+	draw_rectangle(_cx - _half, _cy - _half + _corner,
+	               _cx + _half, _cy + _half - _corner, false);
+	draw_rectangle(_cx - _half + _corner, _cy - _half,
+	               _cx + _half - _corner, _cy + _half, false);
+
+	// Pip positions as thirds of the face, so one table serves every size.
+	var _faces = [
+		[[0, 0]],
+		[[-1, -1], [1, 1]],
+		[[-1, -1], [0, 0], [1, 1]],
+		[[-1, -1], [1, -1], [-1, 1], [1, 1]],
+		[[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]],
+		[[-1, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [1, 1]],
+	];
+
+	// Spaced and sized against the six, which is the crowded face. Pips any
+	// bigger or any closer together and its two columns of three close up into
+	// two bars, and the die stops reading as a die.
+	var _list = _faces[clamp(_face, 1, 6) - 1];
+	var _off  = round(_size * 0.28);
+	var _r    = max(1, round(_size / 14));
+
+	draw_set_colour(_pip);
+	for (var _i = 0; _i < array_length(_list); _i++) {
+		var _px = _cx + _list[_i][0] * _off;
+		var _py = _cy + _list[_i][1] * _off;
+		draw_rectangle(_px - _r, _py - _r, _px + _r, _py + _r, false);
+	}
+}
+
+/// Throw the note a slot is sounding up off the object standing in it.
+///
+/// Lives here rather than in the sequencer's Step because it is this table
+/// that knows where the top of an object on a given ledge is, and both callers
+/// — the playhead striking a slot and a click tuning one — need the same
+/// answer. Two copies of this arithmetic would drift the moment a ledge moved.
+function seq_throw_note(_t, _i, _semi) {
+	var _k    = global.tracks[_t];
+	var _look = music_note_look(_semi);
+
+	// Started a little clear of the object rather than on its top edge, so the
+	// note reads as having come off it instead of growing out of it.
+	notepuff_add(track_slot_x(_t, _i), _k.y - _k.size - 14, _look.colour, _look.label);
 }
 
 /// Re-register everything the rain can land on.
