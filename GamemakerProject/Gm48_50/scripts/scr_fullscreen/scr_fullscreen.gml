@@ -22,6 +22,7 @@ function fullscreen_at(_mx, _my) {
 }
 
 function fullscreen_toggle() {
+	ui_click();
 	window_set_fullscreen(!window_get_fullscreen());
 }
 

@@ -9,7 +9,10 @@ var _secs = 60 / _bpm / SEQ_DIV;
 // music controller starts every track on a bar boundary.
 if (game_playing()) {
 	for (var _k = 0; _k < instrument_count(); _k++) {
-		if (keyboard_check_pressed(ord(string(_k + 1)))) selected = _k;
+		if (keyboard_check_pressed(ord(string(_k + 1)))) {
+			selected = _k;
+			ui_click();
+		}
 	}
 
 	// The picker is clickable as well as keyed. Tested before the ledges and used
@@ -22,11 +25,17 @@ if (game_playing()) {
 	// while it is open — closing it must not also place an instrument.
 	var _ui   = ui_shown() && !ui_claims(mouse_x, mouse_y);
 	var _pick = _ui ? seq_palette_at(mouse_x, mouse_y) : -1;
-	if (_pick >= 0 && mouse_check_button_pressed(mb_left)) selected = _pick;
+	if (_pick >= 0 && mouse_check_button_pressed(mb_left)) {
+		selected = _pick;
+		ui_click();
+	}
 
 	// The randomiser, which sits in the same row and is locked out the same way.
 	var _dice = _ui && seq_dice_at(mouse_x, mouse_y);
-	if (_dice && mouse_check_button_pressed(mb_left)) seq_deal();
+	if (_dice && mouse_check_button_pressed(mb_left)) {
+		seq_deal();
+		ui_click();
+	}
 
 	// The lantern is locked out the same way, though it hangs at the roof line
 	// and the ledges are down at the railing. The two cannot overlap today —

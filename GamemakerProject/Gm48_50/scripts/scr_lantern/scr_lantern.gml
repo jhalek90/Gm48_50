@@ -166,7 +166,7 @@ function lantern_toggle() {
 		LANTERN_Z * global.rain_audio_depth,
 		90, 1400, 1,
 		false, 6,
-		gmlmcp_tunable("lantern_gain", 0.9) * mix_sfx()
+		gmlmcp_tunable("lantern_gain", 0.8) * mix_sfx()
 	);
 }
 

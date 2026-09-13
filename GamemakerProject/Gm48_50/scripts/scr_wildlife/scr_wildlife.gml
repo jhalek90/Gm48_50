@@ -353,7 +353,7 @@ function duck_quack() {
 		sndDuck, _ax, _ay, _az,
 		90, 1400, 1,
 		false, 6,
-		gmlmcp_tunable("duck_gain", 1.2) * mix_sfx(), undefined,
+		gmlmcp_tunable("duck_gain", 0.8) * mix_sfx(), undefined,
 		power(2, (gmlmcp_tunable("duck_tune", 0) + _semi) / 12)
 	);
 

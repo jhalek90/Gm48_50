@@ -344,6 +344,8 @@ function day_paused() {
 function day_pause_toggle() {
 	global.day_paused_v = !day_paused();
 
+	ui_click();
+
 	// Said here rather than at the button, so the key and the button cannot end
 	// up announcing different things — and so anything that pauses the cycle
 	// later gets the message for free.

@@ -89,6 +89,7 @@ function help_seen() {
 
 function help_toggle() {
 	help_ensure();
+	ui_click();
 
 	global.help_open = !global.help_open;
 	global.help_seen = true;

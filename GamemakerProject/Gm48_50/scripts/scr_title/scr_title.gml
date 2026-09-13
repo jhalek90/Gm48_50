@@ -48,6 +48,21 @@ function ui_btn_x(_i) {
 	return room_width - 16 - UI_BTN_SIZE - _i * (UI_BTN_SIZE + UI_BTN_GAP);
 }
 
+/// The interface's click.
+///
+/// Played flat, not positioned: a button is not in the scene, it is on the
+/// glass in front of it, and panning a click to wherever the button happens to
+/// sit would put the interface in the world.
+///
+/// Deliberately not through mix_sfx. That fader is for the objects on the
+/// railing, and a player who pulls it to zero to hear the rain has not asked
+/// for the buttons to stop responding. Master still covers it, as it covers
+/// everything.
+function ui_click() {
+	var _i = audio_play_sound(snd_click, 12, false);
+	audio_sound_gain(_i, gmlmcp_tunable("click_gain", 0.55), 0);
+}
+
 /// Does any part of the interface own a click here?
 ///
 /// The one question everything else asks. There are two modal panels now, the

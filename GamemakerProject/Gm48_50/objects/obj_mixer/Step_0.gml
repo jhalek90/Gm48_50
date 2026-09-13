@@ -22,6 +22,9 @@ if (ui_shown()) {
 
 	if (mouse_check_button_pressed(mb_left)) {
 		dragging = mixer_row_at(mouse_x, mouse_y);
+
+		// On taking hold of a fader, not on every pixel of the drag.
+		if (dragging >= 0) ui_click();
 	}
 	if (!mouse_check_button(mb_left)) dragging = -1;
 

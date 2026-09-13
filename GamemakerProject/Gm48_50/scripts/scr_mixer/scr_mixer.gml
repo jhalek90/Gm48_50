@@ -146,6 +146,7 @@ function mixer_open() {
 
 function mixer_toggle() {
 	mixer_ensure();
+	ui_click();
 	global.mix_open = !global.mix_open;
 }
 
