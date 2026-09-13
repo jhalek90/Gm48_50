@@ -23,12 +23,12 @@ wood_piece(0, 0, room_width, 96, _wood_dark, GRAIN_ALONG_X, 32, 11);
 
 // The fascia along its front edge. A single board, and the lightest thing up
 // there, because it is the one face of the roof turned toward the sky.
-wood_piece(0, 96, room_width, 112, _wood, GRAIN_ALONG_X, 16, 23);
+wood_piece(0, 96, room_width, ROOF_Y, _wood, GRAIN_ALONG_X, 16, 23);
 
 // Posts holding it up. One board each, grain running their length, and each
 // given its own seed so the two of them are not identical timber.
-wood_piece(24, 112, 96, room_height, _wood_dark, GRAIN_ALONG_Y, 72, 41);
-wood_piece(room_width - 96, 112, room_width - 24, room_height, _wood_dark, GRAIN_ALONG_Y, 72, 57);
+wood_piece(24, ROOF_Y, POST_IN, room_height, _wood_dark, GRAIN_ALONG_Y, 72, 41);
+wood_piece(room_width - POST_IN, ROOF_Y, room_width - 24, room_height, _wood_dark, GRAIN_ALONG_Y, 72, 57);
 
 // The railing. Its top edge is the surface the rain lands on and the shelf the
 // sequencer stands objects on, so it is drawn from the shared RAIL_Y.

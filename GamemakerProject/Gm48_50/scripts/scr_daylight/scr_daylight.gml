@@ -198,6 +198,55 @@ function pal_lit(_c) {
 		colour_get_blue(_c)  * colour_get_blue(_l)  / 255);
 }
 
+/// Dimmed until the god rays will leave it alone.
+///
+/// shd_post has no depth buffer and no object list. It decides what is a light
+/// source by luminance alone — which is the right call, and is what lets the
+/// shafts cost one pass instead of two — but it means the rule "do not glow"
+/// cannot be enforced by the shader. It has to be enforced by whatever is
+/// about to be drawn.
+///
+/// The threshold was picked to sit just above lit cloud, which is 0.77. That
+/// is fine for the sky and wrong for everything else that happens to be pale:
+/// pal.rain is 0.93, brighter than lit cloud and brighter than the sun disc
+/// itself at 0.90, so every raindrop and every bead running off the roof was a
+/// little emitter smearing itself toward whatever corner the sun was in. No
+/// threshold can fix that, because there is no value that is above the rain
+/// and below the sun.
+///
+/// Scaled rather than clamped per channel, so the hue survives: rain that was
+/// cold blue-white stays cold blue-white and only stops glowing. The cap comes
+/// off the same tunable the shader reads, so raising ray_thresh to let more of
+/// the sky emit also lets the rain back up, instead of silently leaving the
+/// two halves of one decision in different files.
+function ray_safe(_c) {
+	var _r = colour_get_red(_c);
+	var _g = colour_get_green(_c);
+	var _b = colour_get_blue(_c);
+
+	var _l = (0.2126 * _r + 0.7152 * _g + 0.0722 * _b) / 255;
+
+	// A little under, not exactly at it: the shader ramps over 0.14 above the
+	// threshold rather than cutting, so sitting on the line still emits a
+	// fraction, and the posterise afterwards can round a value back up over it.
+	var _cap = gmlmcp_tunable("ray_thresh", 0.83) - 0.04;
+	if (_l <= _cap) return _c;
+
+	var _k = _cap / _l;
+	return make_colour_rgb(_r * _k, _g * _k, _b * _k);
+}
+
+/// The interface's white.
+///
+/// Not c_white. Interface is drawn at full alpha over whatever the scene is
+/// doing, so a pure white outline or fader handle is the brightest thing in
+/// frame by a distance and comes out as a beam. This is the same bone white
+/// the title card and the fullscreen button already chose for the same reason,
+/// said once so the next piece of interface does not have to rediscover it.
+///
+/// 0.79 luminance, just under the threshold at its default.
+#macro UI_INK make_colour_rgb(202, 202, 194)
+
 /// One colour from the table at an arbitrary time.
 ///
 /// Deliberately does not touch `global.pal`: this answers "what would the sky
@@ -255,4 +304,96 @@ function day_slider_t(_mx) {
 /// The screen x a time sits at on the scrubber.
 function day_slider_x(_t) {
 	return DAY_UI_X1 + (DAY_UI_X2 - DAY_UI_X1) * day_wrap(_t);
+}
+
+// --- Pause, and what is left of the scrubber -----------------------------
+//
+// The clock used to be operated entirely from the bar in the top left: you
+// dragged it to scrub and pressed P to hold it. Both of those have somewhere
+// better to be now — the sky is draggable, and pause is a button in the row
+// with the speaker — so the bar is off, and the scene gets its top-left corner
+// back.
+//
+// Hidden rather than deleted. It is a development tool and a good one: it is
+// the only thing in the game that says what time it is, what phase is playing
+// and how far through it the cycle has got. Set `show_clock` over the bridge to
+// bring it back.
+
+/// Is the clock bar showing?
+function day_ui_shown() {
+	return ui_shown() && gmlmcp_tunable("show_clock", 0) >= 0.5;
+}
+
+/// The third button of the top-right row.
+#macro PAUSE_SIZE UI_BTN_SIZE
+#macro PAUSE_X    ui_btn_x(2)
+#macro PAUSE_Y    UI_BTN_Y
+
+/// Is the cycle held?
+///
+/// A global rather than an instance variable on obj_daylight, for the same
+/// reason the interface's own visibility stopped being one: it is read by the
+/// button that draws it and written by the button that toggles it, and a flag
+/// two things share cannot live inside one of them without that one becoming
+/// the odd owner of the other's state.
+function day_paused() {
+	if (!variable_global_exists("day_paused_v")) global.day_paused_v = false;
+	return global.day_paused_v;
+}
+
+function day_pause_toggle() {
+	global.day_paused_v = !day_paused();
+
+	// Said here rather than at the button, so the key and the button cannot end
+	// up announcing different things — and so anything that pauses the cycle
+	// later gets the message for free.
+	//
+	// It names the cycle, not the game. Nothing else stops: the rain keeps
+	// falling, the board keeps playing and the chime still rings. "Paused" on
+	// its own would promise a stillness this does not deliver.
+	toast_show("Day / Night cycle " + (day_paused() ? "paused" : "unpaused"));
+}
+
+/// Is this screen position on the pause button?
+function day_pause_at(_mx, _my) {
+	return (_mx >= PAUSE_X && _mx <= PAUSE_X + PAUSE_SIZE &&
+	        _my >= PAUSE_Y && _my <= PAUSE_Y + PAUSE_SIZE);
+}
+
+/// The button.
+///
+/// Drawn as the thing the click will do rather than as the state it is in —
+/// two bars while the day is running, a triangle while it is held — which is
+/// the same rule the fullscreen toggle follows with its brackets, and the same
+/// rule every transport control anyone has ever used follows.
+function day_pause_draw() {
+	var _hot = day_pause_at(mouse_x, mouse_y);
+	var _on  = day_paused();
+
+	// The same panel treatment its two neighbours use, because they sit in a
+	// row and anything else would read as three interfaces.
+	draw_set_alpha((_hot || _on) ? 0.34 : 0.20);
+	draw_set_colour(c_black);
+	draw_rectangle(PAUSE_X, PAUSE_Y, PAUSE_X + PAUSE_SIZE, PAUSE_Y + PAUSE_SIZE, false);
+
+	draw_set_colour((_hot || _on) ? UI_INK : c_black);
+	draw_set_alpha(_hot ? 0.7 : 0.45);
+	draw_rectangle(PAUSE_X, PAUSE_Y, PAUSE_X + PAUSE_SIZE, PAUSE_Y + PAUSE_SIZE, true);
+
+	draw_set_colour(UI_INK);
+	draw_set_alpha(_hot ? 0.95 : 0.6);
+
+	var _cx = PAUSE_X + PAUSE_SIZE * 0.5;
+	var _cy = PAUSE_Y + PAUSE_SIZE * 0.5;
+
+	if (_on) {
+		// Play: a triangle, nudged right of centre so its visual weight sits
+		// where the two bars' does rather than where its bounding box would.
+		draw_triangle(_cx - 5, _cy - 8, _cx - 5, _cy + 8, _cx + 8, _cy, false);
+	} else {
+		draw_rectangle(_cx - 7, _cy - 8, _cx - 3, _cy + 8, false);
+		draw_rectangle(_cx + 3, _cy - 8, _cx + 7, _cy + 8, false);
+	}
+
+	draw_set_alpha(1);
 }

@@ -150,7 +150,12 @@ function rain_particles_update() {
 	var _streak = gmlmcp_tunable("rain_streak", 62);
 	var _a_near = gmlmcp_tunable("rain_alpha_near", 0.80);
 	var _a_far  = gmlmcp_tunable("rain_alpha_far",  0.24);
-	var _col    = global.pal.rain;
+	// Capped under the god ray threshold. pal.rain is 0.93 luminance — brighter
+	// than lit cloud and brighter than the sun disc — so uncapped every drop in
+	// the frame was a light source, and forty thousand of them added up to a
+	// wash of bloom smeared toward the sun rather than to beams through the
+	// trees. The colour is unchanged; only the level comes down.
+	var _col    = ray_safe(global.pal.rain);
 
 	var _zn = global.persp_z_near;
 	var _zf = global.persp_z_far;

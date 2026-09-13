@@ -210,3 +210,44 @@ function sky_draw(_y1, _y2) {
 
 	shader_reset();
 }
+
+// --- Dragging the sky ----------------------------------------------------
+//
+// The clock can be scrubbed by taking hold of the sky and pulling it, which is
+// the one control in this game that is not a control: there is no widget, no
+// handle and nothing drawn for it. You reach into the picture and move it.
+//
+// It exists because the day scrubber is a development tool. It hides with T,
+// it is a bar with labels on it, and it is the only way a player has to see
+// what happens at three in the morning without sitting through it. Giving the
+// same power to the thing it operates on means the scene can keep its tool and
+// the player can still go looking.
+
+/// Is this screen position on the open sky?
+///
+/// The window between the roof and the horizon, inside the posts. Not the
+/// water below it: the lake is a surface you are looking down at, and dragging
+/// it sideways to move the sun would be asking the ground to turn the sky.
+///
+/// Geometry only. What else might want that click — the lantern hanging in it,
+/// the volume panel opening over it — is not this function's business; the
+/// caller knows its neighbours, the same way the board knows about the picker.
+function sky_at(_mx, _my) {
+	return (_mx >= POST_IN && _mx <= room_width - POST_IN &&
+	        _my >= ROOF_Y  && _my <= global.persp_horizon);
+}
+
+/// How much of the day a horizontal drag of `_dx` pixels is worth.
+///
+/// Derived from sky_body rather than picked to feel right. A body sits at
+/// room_width * (hour - 6) / 12, so the full width of the opening is exactly
+/// twelve hours and half a day is one screen of travel.
+///
+/// That makes the sun stay under the pointer for as long as you hold it, which
+/// is the whole of why this reads as dragging the sky rather than as a slider
+/// with the handle taken off. A rate chosen for feel would have the sky sliding
+/// out from under the hand moving it, and no amount of tuning fixes that — it
+/// is the wrong relationship, not the wrong number.
+function sky_drag_days(_dx) {
+	return _dx / room_width * 0.5;
+}

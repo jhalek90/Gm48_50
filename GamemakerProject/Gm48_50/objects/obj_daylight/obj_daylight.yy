@@ -9,7 +9,10 @@
   "managed":true,
   "name":"obj_daylight",
   "overriddenProperties":[],
-  "parent":{"name":"Scene","path":"folders/Scene.yy",},
+  "parent":{
+    "name":"Scene",
+    "path":"folders/Scene.yy",
+  },
   "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,

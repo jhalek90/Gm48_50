@@ -113,9 +113,14 @@ function drips_draw() {
 	// read as rain rather than as something coming off the roof above you.
 	var _px  = 4;
 
-	// And a shade brighter than the rain, for the same reason. Kept under the
-	// god ray threshold, like everything else here that catches light.
-	var _col = merge_colour(global.pal.rain, c_white, 0.35);
+	// Whiter than the rain, for the same reason — but at the same level, not
+	// above it. This claimed to be under the god ray threshold and was not: at
+	// 0.95 luminance a bead running off the roof was the brightest thing in the
+	// frame, and a column of them four pixels wide read as a beam pointing the
+	// wrong way. What separates them from the rain is the width, which is what
+	// this was reaching for anyway; the extra brightness was never doing the
+	// work the comment gave it credit for.
+	var _col = ray_safe(merge_colour(global.pal.rain, c_white, 0.35));
 
 	draw_set_colour(_col);
 

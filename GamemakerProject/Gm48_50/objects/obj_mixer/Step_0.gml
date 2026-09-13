@@ -1,13 +1,22 @@
-/// Dragging, and pushing master out to the engine.
+/// Opening, dragging, and pushing master out to the engine.
 
 // A drag can only start on a fader, and once started it keeps that fader even
 // if the pointer slides off it. Releasing anywhere ends it. Without the first
 // rule a click anywhere on the porch would grab whichever fader was nearest;
 // without the second, a fast drag would drop the handle halfway across.
-//
-// Not on the title card, where the faders are not drawn and the click that
-// starts the game would otherwise grab whichever one it happened to land on.
-if (game_playing() && ui_shown()) {
+if (ui_shown()) {
+	if (mouse_check_button_pressed(mb_left)) {
+		if (mixer_btn_at(mouse_x, mouse_y)) {
+			mixer_toggle();
+		} else if (mixer_open() && !mixer_panel_at(mouse_x, mouse_y)) {
+			// Click away to dismiss. That click does nothing else — while the
+			// panel is open mixer_claims() holds off the title card, the board
+			// and the lantern, so putting the faders away cannot also start the
+			// game or drop an instrument on a ledge.
+			mixer_close();
+		}
+	}
+
 	if (mouse_check_button_pressed(mb_left)) {
 		dragging = mixer_row_at(mouse_x, mouse_y);
 	}
@@ -17,6 +26,10 @@ if (game_playing() && ui_shown()) {
 		global.mix[dragging] = mixer_value_at(mouse_x);
 	}
 } else {
+	// Hidden with the rest of the interface, and shut rather than merely
+	// invisible: T is for looking at the scene, and a panel that was open when
+	// it went away would come back over the view it was pressed to clear.
+	mixer_close();
 	dragging = -1;
 }
 

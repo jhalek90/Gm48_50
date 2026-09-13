@@ -27,6 +27,27 @@ function game_playing() {
 	return global.playing;
 }
 
+/// The row of buttons in the top right corner.
+///
+/// There are three of them now — fullscreen, volume, pause — and they used to
+/// be a chain: the speaker placed itself off the fullscreen button, and a third
+/// would have placed itself off the speaker. That works right up until one of
+/// them moves or goes away, at which point every button after it moves too and
+/// the one you changed is not the one that broke.
+///
+/// Counted from the right instead, which is how the row actually reads. Index 0
+/// is the corner. Adding a fourth is `ui_btn_x(3)` and nothing else.
+///
+/// The roof fills that corner and nothing in the scene happens there, so the
+/// row sits on it without covering anything.
+#macro UI_BTN_SIZE 34
+#macro UI_BTN_Y    16
+#macro UI_BTN_GAP  10
+
+function ui_btn_x(_i) {
+	return room_width - 16 - UI_BTN_SIZE - _i * (UI_BTN_SIZE + UI_BTN_GAP);
+}
+
 /// Is the interface showing?
 ///
 /// T hides all of it, not just the day scrubber it used to live on. It was an
@@ -67,4 +88,82 @@ function game_start() {
 	// The same deal the die gives, so the button is a repeat of the opening
 	// move rather than a feature they have to find.
 	seq_deal();
+}
+
+// --- Saying something briefly --------------------------------------------
+//
+// One line, in the middle of the screen, gone in a couple of seconds.
+//
+// It exists because the controls that used to announce themselves stopped.
+// Pause was a key with a line of help under the clock bar and a [paused] tag on
+// the clock itself; both of those went with the bar, and a button that silently
+// stops time is a button you press twice wondering whether it worked. This is
+// what the tag used to be, said once instead of held up forever.
+//
+// Deliberately general and deliberately one-at-a-time. A queue would mean two
+// messages could stack up and the second would arrive after the thing it is
+// about has been forgotten — a later message simply replaces the one in front
+// of it, which is what you want from something this transient.
+
+#macro TOAST_SECS 2.0
+
+/// Hold full strength for the first quarter, then fade. A line that starts
+/// fading the instant it appears reads as already leaving, and the eye has to
+/// find it before it can begin to go.
+#macro TOAST_HOLD 0.25
+
+function toast_init() {
+	global.toast_text = "";
+	global.toast_life = 0;
+}
+
+function toast_show(_text) {
+	if (!variable_global_exists("toast_life")) toast_init();
+
+	global.toast_text = _text;
+	global.toast_life = TOAST_SECS;
+}
+
+function toast_step() {
+	if (!variable_global_exists("toast_life")) toast_init();
+
+	// Real elapsed time, like every other clock here, so it lasts two seconds
+	// rather than a hundred and twenty frames.
+	global.toast_life = max(0, global.toast_life - delta_time / 1000000);
+}
+
+function toast_draw() {
+	if (!variable_global_exists("toast_life")) return;
+	if (global.toast_life <= 0) return;
+
+	var _t = global.toast_life / TOAST_SECS;
+	var _a = (_t > 1 - TOAST_HOLD) ? 1 : _t / (1 - TOAST_HOLD);
+
+	var _cx = room_width * 0.5;
+	var _cy = room_height * 0.5;
+
+	// Sized to a target width rather than by a fixed multiplier, the same way
+	// the title card is, so the line stays put if fntPixels is ever regenerated
+	// at a different point size.
+	var _s = gmlmcp_tunable("toast_size", 300) / max(1, string_width(global.toast_text));
+
+	draw_set_halign(fa_center);
+	draw_set_valign(fa_middle);
+
+	// A shadow first: this lands over the lake, which runs from pale overcast
+	// water to near black, and one tone of text cannot be legible against both.
+	draw_set_colour(c_black);
+	draw_set_alpha(_a * 0.5);
+	draw_text_transformed(_cx + 3, _cy + 3, global.toast_text, _s, _s, 0);
+
+	// UI_INK rather than white: this is large, central, and sits in the open
+	// where the god rays would find it. A white line here would smear a copy of
+	// itself across the sky toward the sun.
+	draw_set_colour(UI_INK);
+	draw_set_alpha(_a);
+	draw_text_transformed(_cx, _cy, global.toast_text, _s, _s, 0);
+
+	draw_set_alpha(1);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
 }

@@ -4,7 +4,10 @@
   "isCompatibility":false,
   "isDnD":false,
   "name":"scr_daylight",
-  "parent":{"name":"Scene","path":"folders/Scene.yy",},
+  "parent":{
+    "name":"Scene",
+    "path":"folders/Scene.yy",
+  },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
 }

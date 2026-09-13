@@ -24,6 +24,16 @@
 
 #macro RAIL_Y 448
 #macro RAIL_Z 1.9
+
+/// The opening you look at the lake through.
+///
+/// The underside of the roof fascia, and the inside faces of the two posts.
+/// obj_porch draws to these and scr_sky measures the grabbable sky from them,
+/// which is the same reason RAIL_Y is up here: a view that can be dragged has
+/// to be dragged exactly where it looks like it is, and two files each holding
+/// their own 112 is how that stops being true.
+#macro ROOF_Y  112
+#macro POST_IN  96
 #macro RAIL_Z_NEAR 1.7
 #macro RAIL_Z_FAR 2.25
 

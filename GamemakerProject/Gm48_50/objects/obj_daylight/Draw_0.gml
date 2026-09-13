@@ -4,7 +4,23 @@
 /// space like everything else here rather than on the GUI layer, because the
 /// room and the window are the same size and a second coordinate space earns
 /// nothing.
-if (!ui_shown() || !game_playing()) exit;
+// The message first, and before the ui_shown gate. T takes the controls away,
+// not the answers: P still works with the interface hidden, and a keypress that
+// silently did nothing visible would be the one case where hiding the interface
+// broke something rather than just tidying it.
+if (!game_playing()) exit;
+
+toast_draw();
+
+// The pause button, which is part of the interface proper and stays whether or
+// not the clock bar is up — that is the whole point of having moved it out of
+// the bar's help line.
+if (!ui_shown()) exit;
+
+day_pause_draw();
+
+// And the bar, which is off unless somebody asks for it over the bridge.
+if (!day_ui_shown()) exit;
 
 var _x1 = DAY_UI_X1;
 var _x2 = DAY_UI_X2;
@@ -45,7 +61,7 @@ draw_set_halign(fa_center);
 for (var _p = 0; _p < DAY_PHASES; _p++) {
 	var _px = _x1 + (_x2 - _x1) * (_p / DAY_PHASES);
 
-	draw_set_colour(c_white);
+	draw_set_colour(UI_INK);
 	draw_set_alpha(0.35);
 	draw_line(_px, _y, _px, _y + _h);
 
@@ -62,7 +78,7 @@ var _hx = day_slider_x(global.day_t);
 draw_set_colour(c_black);
 draw_set_alpha(0.7);
 draw_rectangle(_hx - 3, _y - 6, _hx + 3, _y + _h + 6, false);
-draw_set_colour(c_white);
+draw_set_colour(UI_INK);
 draw_set_alpha(dragging ? 1 : 0.85);
 draw_rectangle(_hx - 2, _y - 5, _hx + 2, _y + _h + 5, false);
 
@@ -72,14 +88,14 @@ draw_rectangle(_hx - 2, _y - 5, _hx + 2, _y + _h + 5, false);
 var _i = day_phase_index();
 var _pct = string(floor(day_phase_progress() * 100));
 
-draw_set_colour(c_white);
+draw_set_colour(UI_INK);
 draw_set_alpha(0.9);
 // Written "to" rather than as an arrow. fntPixels does not carry an arrow
 // character, and it does not carry ">" either — its set is ASCII less <, >, ^,
 // ` and ~ — so both spellings draw as an empty box. Anything added to this
 // line wants checking against that set.
 draw_text(_x1, _y - 40, day_clock() + "   " + day_phase_name(_i) + " to " +
-	day_phase_name(_i + 1) + "  " + _pct + "%" + (paused ? "   [paused]" : ""));
+	day_phase_name(_i + 1) + "  " + _pct + "%" + (day_paused() ? "   [paused]" : ""));
 
 draw_set_alpha(0.5);
 draw_text(_x1, _y - 22, "drag to scrub   P pause   T hide");

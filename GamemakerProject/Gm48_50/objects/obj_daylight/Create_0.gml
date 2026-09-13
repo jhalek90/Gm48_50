@@ -10,7 +10,13 @@ wind_init();
 music_init();
 
 dragging = false;
-paused   = false;
+
+// Dragging the sky itself, and where the pointer was when it last moved. Held
+// separately from the scrubber's drag rather than folded into one mode flag,
+// because they are read in opposite directions: the bar sets the time from an
+// absolute position, the sky adds a delta to it.
+sky_drag = false;
+sky_mx   = 0;
 
 // The value this object last pushed into the tunable registry. Anything else
 // sitting there means the time was set from outside — see the Step event.

@@ -10,9 +10,10 @@
 /// want to change *before* they begin, and a control that appears only after
 /// you commit is a control you find by accident.
 
-#macro FS_SIZE 34
-#macro FS_X    (room_width - FS_SIZE - 16)
-#macro FS_Y    16
+/// The corner button of the top-right row.
+#macro FS_SIZE UI_BTN_SIZE
+#macro FS_X    ui_btn_x(0)
+#macro FS_Y    UI_BTN_Y
 
 /// Is this screen position on the button?
 function fullscreen_at(_mx, _my) {
@@ -34,7 +35,7 @@ function fullscreen_draw() {
 	draw_set_colour(c_black);
 	draw_rectangle(FS_X, FS_Y, FS_X + FS_SIZE, FS_Y + FS_SIZE, false);
 
-	draw_set_colour(_hot ? c_white : c_black);
+	draw_set_colour(_hot ? UI_INK : c_black);
 	draw_set_alpha(_hot ? 0.7 : 0.45);
 	draw_rectangle(FS_X, FS_Y, FS_X + FS_SIZE, FS_Y + FS_SIZE, true);
 
@@ -44,7 +45,7 @@ function fullscreen_draw() {
 	//
 	// Held under the god ray threshold like the rest of the interface, or a
 	// bright glyph up against the roof would smear toward the sun.
-	draw_set_colour(make_colour_rgb(202, 202, 194));
+	draw_set_colour(UI_INK);
 	draw_set_alpha(_hot ? 0.95 : 0.6);
 
 	var _cx  = FS_X + FS_SIZE * 0.5;

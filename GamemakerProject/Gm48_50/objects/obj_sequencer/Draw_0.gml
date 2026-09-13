@@ -33,7 +33,7 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 	// Step guides. Every fourth is brighter so the bar lines read at a glance
 	// and the loop divisions are visible without counting cells.
 	if (_ui) {
-		draw_set_colour(c_white);
+		draw_set_colour(UI_INK);
 		for (var _i = 0; _i < SEQ_STEPS; _i++) {
 			var _gx = track_slot_x(_t, _i);
 			draw_set_alpha(((_i mod 4 == 0) ? 0.24 : 0.10) * (1 - _fade));
@@ -70,7 +70,7 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 		// already hazed for its distance and paled for the strike, so the
 		// renderer never has to know the hour or whether the note just fired.
 		prop_draw(_ins, _x, _k.y - _lift, _k.size,
-			merge_colour(_col, c_white, _f * 0.65), 1);
+			ray_safe(merge_colour(_col, UI_INK, _f * 0.65)), 1);
 	}
 
 	// The cell under the cursor, outlined in what would be dropped there.
@@ -96,12 +96,13 @@ if (!_ui) exit;
 // instead, the labels run into each other.
 var _bw  = PICK_SIZE;
 var _by  = PICK_Y;
+var _px  = pick_x();
 var _hot = seq_palette_at(mouse_x, mouse_y);
 
 draw_set_halign(fa_center);
 for (var _p = 0; _p < instrument_count(); _p++) {
 	var _pd = global.instruments[_p];
-	var _bx = PICK_X + _p * PICK_PITCH;
+	var _bx = _px + _p * PICK_PITCH;
 	var _cx = _bx + _bw * 0.5;
 	var _on    = (_p == selected);
 	var _hover = (_hot == _p);
@@ -115,19 +116,19 @@ for (var _p = 0; _p < instrument_count(); _p++) {
 
 	prop_draw(_p, _cx, _by + _bw - 4, _bw - 10, _pd.colour, _on ? 1 : (_hover ? 0.8 : 0.45));
 
-	draw_set_colour((_on || _hover) ? c_white : c_black);
+	draw_set_colour((_on || _hover) ? UI_INK : c_black);
 	draw_set_alpha(_on ? 0.95 : (_hover ? 0.7 : 0.55));
 	draw_rectangle(_bx, _by, _bx + _bw, _by + _bw, true);
 
 	// Tucked into the corner. Centred, it sat squarely on top of the object it
 	// was there to label, which was fine when the button was a plain swatch.
 	draw_set_halign(fa_left);
-	draw_set_colour(c_white);
+	draw_set_colour(UI_INK);
 	draw_set_alpha(_on ? 0.85 : 0.4);
 	draw_text(_bx + 4, _by + 1, string(_p + 1));
 	draw_set_halign(fa_center);
 
-	draw_set_colour(c_white);
+	draw_set_colour(UI_INK);
 	draw_set_alpha(_on ? 0.95 : 0.5);
 	draw_text(_cx, _by + _bw + 5, _pd.name);
 }
@@ -147,17 +148,21 @@ draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, false);
 dice_draw(_dcx, _by + _bw * 0.5, _bw - 14, dice_face,
 	make_colour_rgb(226, 222, 210), make_colour_rgb(52, 44, 40), _dhot ? 1 : 0.55);
 
-draw_set_colour(_dhot ? c_white : c_black);
+draw_set_colour(_dhot ? UI_INK : c_black);
 draw_set_alpha(_dhot ? 0.7 : 0.55);
 draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, true);
 
-draw_set_colour(c_white);
+draw_set_colour(UI_INK);
 draw_set_alpha(_dhot ? 0.95 : 0.5);
 draw_text(_dcx, _by + _bw + 5, "Roll");
 
-draw_set_halign(fa_left);
-
-draw_set_colour(c_white);
+// The help line, centred on the row it describes rather than pinned to the left
+// margin the row used to start at. Left where it was it would be the one piece
+// of the bottom interface still hugging a corner, and would read as a caption
+// for the porch instead of for the buttons underneath it.
+draw_set_colour(UI_INK);
 draw_set_alpha(0.7);
-draw_text(40, _by - 26, "1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear");
+draw_text(_px + pick_width() * 0.5, _by - 26,
+	"1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear");
 draw_set_alpha(1);
+draw_set_halign(fa_left);

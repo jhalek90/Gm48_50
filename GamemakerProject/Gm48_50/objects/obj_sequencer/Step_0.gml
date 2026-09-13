@@ -18,7 +18,9 @@ if (game_playing()) {
 	// to turn one click into two actions.
 	// Hidden means not clickable: an invisible button you can still hit by
 	// remembering where it was is worse than either showing it or removing it.
-	var _ui   = ui_shown();
+	// The volume panel is nowhere near the board, but it owns every click
+	// while it is open — closing it must not also place an instrument.
+	var _ui   = ui_shown() && !mixer_claims(mouse_x, mouse_y);
 	var _pick = _ui ? seq_palette_at(mouse_x, mouse_y) : -1;
 	if (_pick >= 0 && mouse_check_button_pressed(mb_left)) selected = _pick;
 

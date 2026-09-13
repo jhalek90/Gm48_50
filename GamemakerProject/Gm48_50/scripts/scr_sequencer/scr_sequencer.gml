@@ -24,7 +24,6 @@
 /// Shared by the hit test and the drawing, so the button you can click is
 /// always the button you can see — the same arrangement the day scrubber and
 /// the volume faders use, and the reason none of the three can drift.
-#macro PICK_X      40
 #macro PICK_PITCH  84
 #macro PICK_SIZE   62
 #macro PICK_Y      (room_height - 104)
@@ -105,12 +104,41 @@ function seq_cell_at(_mx, _my) {
 	return { track: -1, step: -1 };
 }
 
+/// How wide the whole row is: every instrument, plus the die on the end.
+///
+/// The last box contributes its own width rather than a pitch, because the gap
+/// after it is not part of the row — measuring in whole pitches would leave the
+/// cluster sitting a gap's width left of where it looks like it should be.
+function pick_width() {
+	return instrument_count() * PICK_PITCH + PICK_SIZE;
+}
+
+/// The left edge of the row.
+///
+/// Centred rather than written down. It used to start 40 from the left, which
+/// was right while the volume faders sat in the bottom right and the two of
+/// them together spanned the screen; now that the faders have gone up behind
+/// the speaker button, a hard left margin leaves the picker hanging off one
+/// corner with nothing to balance it.
+///
+/// Derived from the instrument count for the same reason seq_dice_x is: adding
+/// an instrument should widen the row about its middle, not push the die off
+/// the right-hand edge.
+///
+/// Snapped to the scene's four pixel grid, so the buttons land on the same
+/// lattice as everything else drawn over the deck.
+function pick_x() {
+	return floor((room_width - pick_width()) * 0.5 / 4) * 4;
+}
+
 /// Which picker button a screen position is over, or -1.
 function seq_palette_at(_mx, _my) {
 	if (_my < PICK_Y || _my > PICK_Y + PICK_SIZE) return -1;
 
+	var _px = pick_x();
+
 	for (var _p = 0; _p < instrument_count(); _p++) {
-		var _bx = PICK_X + _p * PICK_PITCH;
+		var _bx = _px + _p * PICK_PITCH;
 		if (_mx >= _bx && _mx <= _bx + PICK_SIZE) return _p;
 	}
 	return -1;
@@ -121,7 +149,7 @@ function seq_palette_at(_mx, _my) {
 /// Derived rather than written down, so the button follows the palette along
 /// when an instrument is added instead of ending up underneath one.
 function seq_dice_x() {
-	return PICK_X + instrument_count() * PICK_PITCH;
+	return pick_x() + instrument_count() * PICK_PITCH;
 }
 
 /// Is this screen position on the randomiser?
@@ -262,6 +290,12 @@ function seq_splash(_t, _i, _sprite) {
 
 	var _fx = instance_create_depth(track_slot_x(_t, _i), _k.y, SEQ_VFX_DEPTH, objVfxFnf);
 	_fx.sprite_index = _sprite;
+
+	// Both effect sprites are white, and a white sprite drawn untinted is a
+	// 1.0 luminance light source going off under the roof twice a second. Tinted
+	// to the cap instead, which is the same thing the rain and the interface had
+	// to do — nothing in this game is allowed to be brighter than the sky.
+	_fx.image_blend = ray_safe(c_white);
 
 	// Scaled from here rather than by giving objVfxFnf a Create event, so the
 	// object stays exactly as it was authored and the sequencer owns how big

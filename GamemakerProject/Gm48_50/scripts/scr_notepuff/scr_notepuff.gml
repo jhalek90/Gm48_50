@@ -99,7 +99,7 @@ function notepuff_draw() {
 		draw_set_alpha(_a * 0.5);
 		draw_text(_x + 2, _ly + 2, _p.label);
 
-		draw_set_colour(c_white);
+		draw_set_colour(UI_INK);
 		draw_set_alpha(_a * 0.9);
 		draw_text(_x, _ly, _p.label);
 	}
@@ -118,7 +118,9 @@ function notepuff_glyph(_x, _y, _colour, _alpha) {
 	var _px = floor(_x / _b) * _b;
 	var _py = floor(_y / _b) * _b;
 
-	draw_set_colour(_colour);
+	// Capped: a scale degree that came up yellow sits at about 0.85 luminance
+	// and would throw a beam every time that note played.
+	draw_set_colour(ray_safe(_colour));
 	draw_set_alpha(_alpha);
 
 	// The head, as three bars stepping up to the right. That slant is what
