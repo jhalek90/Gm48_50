@@ -53,7 +53,7 @@ draw_text_transformed(_cx, _cy, _name, _s, _s, 0);
 //
 // Written without the angle brackets it was asked for: fntPixels carries ASCII
 // less < and >, so both would have drawn as empty boxes.
-var _msg = "press any key to start";
+var _msg = "press any key to relax";
 var _p   = 0.45 + 0.3 * sin(t * 1.6);
 var _ps  = gmlmcp_tunable("title_prompt", 224) / max(1, string_width(_msg));
 var _py  = _cy + string_height(_name) * _s * 0.5 + 52;
