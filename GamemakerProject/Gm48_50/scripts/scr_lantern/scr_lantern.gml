@@ -199,10 +199,27 @@ function lantern_bar(_cx, _y1, _y2, _half) {
 /// pattern does not audibly — visibly — loop.
 function lantern_flicker() {
 	var _t = global.lantern_t;
-	return 1
+	var _f = 1
 		+ 0.055 * sin(_t * 5.30)
 		+ 0.035 * sin(_t * 9.17 + 1.7)
 		+ 0.022 * sin(_t * 14.9 + 0.6);
+
+	// And the guttering, on the same air that swings it.
+	//
+	// A lamp that leans over in a gust and goes on burning perfectly evenly
+	// through it is the thing that gives away that the swing is animation. The
+	// glass shelters the flame — that is what the glass is for — so this is
+	// small, but it has to be there, and it has to arrive when the lantern is
+	// already moving rather than on a clock of its own.
+	//
+	// Subtracted, never added. Wind robs a flame of its shape; it does not
+	// make it burn brighter, and a symmetric wobble here would read as the
+	// flame pulsing rather than being pushed about. So the term runs from zero
+	// down, and the flame recovers up to its own level between eddies.
+	var _gut = gmlmcp_tunable("lantern_gutter", 0.20);
+	_f -= abs(global.wind_air) * _gut * (0.5 + 0.5 * sin(_t * 23.4 + 2.4));
+
+	return _f;
 }
 
 /// The light it throws, drawn additively over the scene.
