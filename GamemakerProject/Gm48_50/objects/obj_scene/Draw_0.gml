@@ -19,6 +19,10 @@ sky_draw(0, _h);
 // thing in the scene that does not answer to the light.
 draw_sprite_ext(spr_mountains, 0, 0, _h, 1, 1, 0, global.pal.shore, 1);
 
+// Birds, after the range so they pass in front of it and before the lake so
+// they can never be drawn over water they are nowhere near.
+birds_draw();
+
 // The lake. The gradient that used to be a two-colour rectangle now lives
 // inside shd_water, which paints it and the wave field in one pass — the
 // shader is handed the same two palette colours this event would have used.
@@ -30,6 +34,11 @@ water_draw(_h, room_height);
 water_reflect(spr_mountains, 0, _h,
 	merge_colour(global.pal.shore, global.pal.water, 0.55),
 	gmlmcp_tunable("reflect_alpha", 0.45));
+
+// The duck, on the lake: after the water and the reflections cast into it, and
+// before the bank and the trees, so it floats on the surface and passes behind
+// a trunk rather than across it.
+duck_draw();
 
 // The near bank, where the closest rain lands. The flat rectangle this used to
 // be is now shd_grass: the rectangle is still under there as soil, with blades

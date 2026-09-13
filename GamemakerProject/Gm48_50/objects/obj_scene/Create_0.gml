@@ -15,3 +15,8 @@ grass_init();
 
 // The stand of trees, as a table of positions rather than as instances.
 trees_init();
+
+// The birds, the duck and the fireflies. Initialised here because two of the
+// three are drawn from this object's Draw event, between the layers they
+// belong between — see scr_wildlife.
+wildlife_init();

@@ -27,7 +27,12 @@ if (game_playing()) {
 		dirty = true;
 	}
 
-	var _cell = (_pick >= 0 || _dice) ? { track: -1, step: -1 } : seq_cell_at(mouse_x, mouse_y);
+	// The lantern is locked out the same way, though it hangs at the roof line
+	// and the ledges are down at the railing. The two cannot overlap today —
+	// but that was true of the picker and the ledges as well, and the rule here
+	// is that a layout change must not be able to turn one click into two.
+	var _free = (_pick < 0 && !_dice && !lantern_at(mouse_x, mouse_y));
+	var _cell = _free ? seq_cell_at(mouse_x, mouse_y) : { track: -1, step: -1 };
 	if (_cell.track >= 0) {
 		var _row = slots[_cell.track];
 		if (mouse_check_button_pressed(mb_left)) {
