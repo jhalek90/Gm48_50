@@ -3,7 +3,11 @@
 // looked at on its own.
 if (!game_playing()) exit;
 
-var _cell = seq_cell_at(mouse_x, mouse_y);
+// The board's chrome — the step guides, the cell under the cursor, the picker
+// and the help line — answers to T. The objects, the playhead and the notes do
+// not: those are the game running, not the controls for it.
+var _ui   = ui_shown();
+var _cell = _ui ? seq_cell_at(mouse_x, mouse_y) : { track: -1, step: -1 };
 // Distance hazes toward the water behind it, so the far ledges recede into
 // whatever colour the lake is at this hour instead of a fixed dusk blue.
 var _haze = global.pal.water;
@@ -28,11 +32,13 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 
 	// Step guides. Every fourth is brighter so the bar lines read at a glance
 	// and the loop divisions are visible without counting cells.
-	draw_set_colour(c_white);
-	for (var _i = 0; _i < SEQ_STEPS; _i++) {
-		var _gx = track_slot_x(_t, _i);
-		draw_set_alpha(((_i mod 4 == 0) ? 0.24 : 0.10) * (1 - _fade));
-		draw_rectangle(_gx - _half, _top, _gx + _half, _k.y, true);
+	if (_ui) {
+		draw_set_colour(c_white);
+		for (var _i = 0; _i < SEQ_STEPS; _i++) {
+			var _gx = track_slot_x(_t, _i);
+			draw_set_alpha(((_i mod 4 == 0) ? 0.24 : 0.10) * (1 - _fade));
+			draw_rectangle(_gx - _half, _top, _gx + _half, _k.y, true);
+		}
 	}
 
 	// Playhead.
@@ -80,6 +86,10 @@ for (var _t = SEQ_TRACKS - 1; _t >= 0; _t--) {
 // rises in front of the objects either side of the one that threw it, and
 // before the palette, which is interface and belongs over everything.
 notepuff_draw();
+
+// Everything below is the interface: the picker, the randomiser and the line
+// of help under them. T takes all of it away.
+if (!_ui) exit;
 
 // --- Palette -------------------------------------------------------------
 // Laid out on a pitch wide enough for the longest name. Sized to the boxes
@@ -149,5 +159,5 @@ draw_set_halign(fa_left);
 
 draw_set_colour(c_white);
 draw_set_alpha(0.7);
-draw_text(40, _by - 26, "1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear   " + string(round(gmlmcp_tunable("bpm", SEQ_BPM))) + " BPM");
+draw_text(40, _by - 26, "1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear");
 draw_set_alpha(1);

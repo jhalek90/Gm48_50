@@ -16,11 +16,14 @@ if (game_playing()) {
 	// to lock them out, so a click on a button can never also drop an object —
 	// the two areas do not overlap today, but a layout change should not be able
 	// to turn one click into two actions.
-	var _pick = seq_palette_at(mouse_x, mouse_y);
+	// Hidden means not clickable: an invisible button you can still hit by
+	// remembering where it was is worse than either showing it or removing it.
+	var _ui   = ui_shown();
+	var _pick = _ui ? seq_palette_at(mouse_x, mouse_y) : -1;
 	if (_pick >= 0 && mouse_check_button_pressed(mb_left)) selected = _pick;
 
 	// The randomiser, which sits in the same row and is locked out the same way.
-	var _dice = seq_dice_at(mouse_x, mouse_y);
+	var _dice = _ui && seq_dice_at(mouse_x, mouse_y);
 	if (_dice && mouse_check_button_pressed(mb_left)) seq_deal();
 
 	// The lantern is locked out the same way, though it hangs at the roof line

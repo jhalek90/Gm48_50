@@ -4,7 +4,7 @@
 /// space like everything else here rather than on the GUI layer, because the
 /// room and the window are the same size and a second coordinate space earns
 /// nothing.
-if (!show_ui || !game_playing()) exit;
+if (!ui_shown() || !game_playing()) exit;
 
 var _x1 = DAY_UI_X1;
 var _x2 = DAY_UI_X2;
@@ -82,6 +82,5 @@ draw_text(_x1, _y - 40, day_clock() + "   " + day_phase_name(_i) + " to " +
 	day_phase_name(_i + 1) + "  " + _pct + "%" + (paused ? "   [paused]" : ""));
 
 draw_set_alpha(0.5);
-draw_text(_x1, _y - 22, "drag to scrub   P pause   T hide   " +
-	string(round(gmlmcp_tunable("day_secs", music_cycle_secs()))) + "s cycle");
+draw_text(_x1, _y - 22, "drag to scrub   P pause   T hide");
 draw_set_alpha(1);

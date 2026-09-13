@@ -7,7 +7,7 @@
 //
 // Not on the title card, where the faders are not drawn and the click that
 // starts the game would otherwise grab whichever one it happened to land on.
-if (game_playing()) {
+if (game_playing() && ui_shown()) {
 	if (mouse_check_button_pressed(mb_left)) {
 		dragging = mixer_row_at(mouse_x, mouse_y);
 	}

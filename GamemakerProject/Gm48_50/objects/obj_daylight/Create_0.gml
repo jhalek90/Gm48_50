@@ -10,7 +10,6 @@ wind_init();
 music_init();
 
 dragging = false;
-show_ui  = true;
 paused   = false;
 
 // The value this object last pushed into the tunable registry. Anything else

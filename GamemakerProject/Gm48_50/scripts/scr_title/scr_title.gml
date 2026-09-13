@@ -27,6 +27,34 @@ function game_playing() {
 	return global.playing;
 }
 
+/// Is the interface showing?
+///
+/// T hides all of it, not just the day scrubber it used to live on. It was an
+/// instance variable there because it governed one panel; once it governs the
+/// picker, the faders and the fullscreen button as well it cannot sit on any
+/// one of them without that object becoming the odd owner of everybody else's
+/// visibility.
+///
+/// What it hides is chrome, not the instrument. The railing's objects, the
+/// playhead sweeping them and the notes coming off them all stay: they are the
+/// game running, and a clean view of the scene should still show the scene
+/// doing something. What goes is everything that is only there to be operated.
+///
+/// Hidden also means not clickable. An invisible button you can still press by
+/// remembering where it was is worse than either showing it or removing it.
+function ui_init() {
+	global.ui_visible = true;
+}
+
+function ui_shown() {
+	if (!variable_global_exists("ui_visible")) ui_init();
+	return global.ui_visible;
+}
+
+function ui_toggle() {
+	global.ui_visible = !ui_shown();
+}
+
 function game_start() {
 	global.playing = true;
 
