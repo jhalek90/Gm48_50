@@ -19,6 +19,20 @@
 /// that is sixteen bars each.
 #macro MUSIC_SECTIONS 2
 
+/// How many times a chord group is struck before the progression moves on.
+///
+/// Justin's number: morning is DADE four times, then EGDE four times. It is not
+/// derived from anything — how long to sit on a chord is a musical decision,
+/// where how long the chord lasts is a measurement.
+#macro CHORD_REPEATS 4
+
+/// How many chord voices may ring at once.
+///
+/// A two bar phrase struck every two bars overlaps by a quarter of a second, so
+/// two is the working number and three is the tail of a scrub. This only ever
+/// bites when the day is being dragged about.
+#macro CHORD_VOICES 4
+
 /// The notes a player can be handed, in semitones from D.
 ///
 /// Every sample was recorded at D, so a note is nothing more than how far that
@@ -60,6 +74,55 @@ function music_scales_init() {
 		[[0, -5, 0, 2], [0, -5, -2, 4], [5, 0, 5, -3], [-2, 5, -4, 1]],// DADE DACF# GDGB CGBbEb
 		[[0, -5, 0, 4], [4, -1, 4, -5]],                               // D A D F# |  F# C# F# A
 	];
+
+	// --- The same harmony, as recordings ---------------------------------
+	//
+	// One sample per group of music_rhythm above, in the same order, so the
+	// two tables are read with the same index and a group cannot end up with
+	// the wrong chord under it. A phase with an empty array here falls back to
+	// its whole-piece recording in music_tracks.
+	//
+	// Morning only, for now. This is the experiment: instead of playing a
+	// sixty-four second take and trusting it to stay with the sequencer for a
+	// whole phase, the chords are struck on the bar count the player's own
+	// pattern is already locked to. Nothing can drift, because nothing is
+	// running free — every strike is placed by the same counter that placed the
+	// note before it.
+	//
+	// If it holds up, afternoon and night get their five filled in and
+	// music_tracks stops being played at all.
+	global.music_chords = [
+		[DADE, EGDE],   // Morning
+		[],             // Afternoon — still the recording
+		[],             // Night — still the recording
+	];
+
+	global.music_voices = [];
+}
+
+/// Does this phase play chords rather than a recording?
+function music_uses_chords(_phase) {
+	var _g = global.music_chords[_phase mod DAY_PHASES];
+	return array_length(_g) > 0;
+}
+
+/// How many whole bars one chord sample occupies.
+///
+/// Measured, not written down. DADE is 4.26 seconds against a two second bar,
+/// so it is a two bar phrase with a little ring on the end — and that is the
+/// spacing it wants, because striking it every bar would stack three voices
+/// deep and striking it every four would leave two bars of silence in the
+/// middle of the group.
+///
+/// Rounding the measurement is the same trick music_init uses on the phase
+/// length, and it is worth having for the same reason: the chords are still
+/// being exported. Come back with a longer take and the spacing follows it
+/// instead of needing a number changed here.
+function music_chord_bars(_snd) {
+	var _len = audio_sound_length(_snd);
+	if (_len <= 0) return 2;
+
+	return max(1, round(_len / music_bar_secs()));
 }
 
 /// Which half of the current phase the clock is in.
@@ -265,16 +328,99 @@ function music_cycle_secs() {
 
 function music_play(_index, _gain) {
 	if (global.music_inst >= 0) audio_stop_sound(global.music_inst);
+	global.music_inst = -1;
 
-	// Looped, even though a phase is the length of one play. The loop is the
-	// safety net: if the clock is scrubbed or the day is slowed down, the track
-	// carries on rather than leaving the scene dry.
-	global.music_inst   = audio_play_sound(global.music_tracks[_index], 10, true);
+	// A chord phase has no piece to start. Everything else about the handover
+	// is unchanged — it still takes over on a downbeat, and the outgoing track
+	// has still faded itself out before the boundary — there is simply nothing
+	// to put on. The chords arrive on their own on the next bar.
+	if (!music_uses_chords(_index)) {
+		// Looped, even though a phase is the length of one play. The loop is the
+		// safety net: if the clock is scrubbed or the day is slowed down, the track
+		// carries on rather than leaving the scene dry.
+		global.music_inst = audio_play_sound(global.music_tracks[_index], 10, true);
+		audio_sound_gain(global.music_inst, _gain, 0);
+	}
+
 	global.music_index  = _index;
 	global.music_want   = -1;
 	global.music_fading = false;
+}
 
-	audio_sound_gain(global.music_inst, _gain, 0);
+/// Strike the chord this bar wants, if this bar wants one.
+///
+/// The whole point of the experiment is here: the bar number is the input.
+/// obj_sequencer counts a bar every time its playhead comes back to the top, so
+/// a chord placed against that count is placed against the same clock the
+/// player's pattern runs on. There is no drift to accumulate, because nothing
+/// is free-running — a scrub, a dropped frame or a tempo change moves the
+/// chords and the pattern together or moves neither.
+///
+/// Each group is struck CHORD_REPEATS times before the progression moves on, so
+/// morning is DADE four times and then EGDE four times, sixteen bars in all,
+/// twice over a thirty-two bar phase.
+function music_chord_step(_phase, _bar, _gain) {
+	var _groups = global.music_chords[_phase mod DAY_PHASES];
+	var _n      = array_length(_groups);
+	if (_n <= 0) return;
+
+	// Measured off the first sample and applied to all of them. They are one
+	// set recorded together, and a progression whose chords sat on different
+	// grids would be the exact fault this is meant to remove.
+	var _span   = gmlmcp_tunable("chord_bars", music_chord_bars(_groups[0]));
+	var _reps   = max(1, gmlmcp_tunable("chord_repeats", CHORD_REPEATS));
+	var _block  = _span * _reps;
+
+	if ((_bar mod _span) != 0) return;
+
+	// Floored into the progression rather than counted up, so scrubbing the sky
+	// lands on whichever chord that bar would have held rather than resuming
+	// wherever the last strike left a counter.
+	var _g = (floor(_bar / _block)) mod _n;
+
+	var _inst = audio_play_sound(_groups[_g], 10, false);
+	audio_sound_gain(_inst, _gain, 0);
+
+	array_push(global.music_voices, _inst);
+}
+
+/// Forget the chord voices that have finished, cap the rest, and keep them on
+/// the fader.
+///
+/// The cap is for scrubbing. Dragging the sky runs the day past at any speed it
+/// likes but the sequencer keeps its own tempo, so the bar count cannot run
+/// away — this is the belt to that braces, and it costs one pass over a list
+/// that is three or four long.
+///
+/// The gain is set here rather than only at the strike because the Music fader
+/// has to mean the same thing for a chord as it does for a recording: pull it
+/// down and what is currently sounding comes down, not just what starts next.
+/// A four second chord is long enough for the difference to be obvious.
+function music_voices_update(_gain) {
+	var _live = [];
+
+	for (var _i = 0; _i < array_length(global.music_voices); _i++) {
+		var _v = global.music_voices[_i];
+		if (!audio_is_playing(_v)) continue;
+
+		audio_sound_gain(_v, _gain, 0);
+		array_push(_live, _v);
+	}
+
+	while (array_length(_live) > CHORD_VOICES) {
+		audio_stop_sound(_live[0]);
+		array_delete(_live, 0, 1);
+	}
+
+	global.music_voices = _live;
+}
+
+/// Silence the chords, for a handover or a scrub.
+function music_voices_stop() {
+	for (var _i = 0; _i < array_length(global.music_voices); _i++) {
+		audio_stop_sound(global.music_voices[_i]);
+	}
+	global.music_voices = [];
 }
 
 /// Called once per step by obj_daylight, after the clock has advanced.
@@ -310,8 +456,29 @@ function music_step() {
 	// At startup music_bar is -1 and the count is already 0, so the first track
 	// begins immediately rather than making the scene wait a bar in silence.
 	if (global.music_want >= 0 && global.seq_bar != global.music_bar) {
+		// Whatever is ringing belongs to the phase being left. Stopped rather
+		// than left to fade, because the incoming phase is in a different key
+		// and a D major chord hanging over the first bar of A major is the one
+		// sour note this arrangement can produce.
+		music_voices_stop();
 		music_play(global.music_want, _gain);
 	}
+
+	// --- The chords ------------------------------------------------------
+	//
+	// Struck on the same bar change the handover waits for, and for the same
+	// reason: that count is where the player's pattern begins.
+	//
+	// Held back over the fade at the end of a phase, which is what the
+	// recording's fade-out is for a chord phase. The last strike before the
+	// fade is left to ring, so the morning thins out into the afternoon rather
+	// than stopping dead on a boundary.
+	if (music_uses_chords(_phase) && !global.music_fading && _left > _fade &&
+	    global.seq_bar != global.music_bar) {
+		music_chord_step(_phase, global.seq_bar, _gain);
+	}
+
+	music_voices_update(_gain);
 
 	global.music_bar = global.seq_bar;
 }
