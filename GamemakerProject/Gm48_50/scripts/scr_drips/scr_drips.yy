@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_drips",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_drips",
+  "parent":{"name":"Gm48_50","path":"Gm48_50.yyp",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

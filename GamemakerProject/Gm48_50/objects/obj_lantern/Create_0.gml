@@ -8,3 +8,8 @@
 depth = -140;
 
 lantern_init();
+
+// The chime hangs from the same roof at the same depth, and is the same kind
+// of thing — something dangling in the one wind — so it rides along here
+// rather than earning an object of its own.
+chime_init();

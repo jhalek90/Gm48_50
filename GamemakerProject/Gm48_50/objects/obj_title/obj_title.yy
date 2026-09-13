@@ -9,7 +9,10 @@
   "managed":true,
   "name":"obj_title",
   "overriddenProperties":[],
-  "parent":{"name":"Gm48_50","path":"Gm48_50.yyp",},
+  "parent":{
+    "name":"Gm48_50",
+    "path":"Gm48_50.yyp",
+  },
   "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,

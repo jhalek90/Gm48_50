@@ -47,11 +47,9 @@ function lantern_init() {
 
 	global.lantern_t = 0;
 
-	// The swing, as a pendulum: an angle and the speed it is changing at.
-	// Integrated rather than evaluated, so the lantern has somewhere to put the
-	// momentum a gust gives it.
-	global.lantern_ang = 0;
-	global.lantern_vel = 0;
+	// The swing. The integrator lives in scr_wind, beside the gust that drives
+	// it, because the porch has more than one thing hanging off it now.
+	global.lantern_pend = pendulum_new();
 
 	// The hour last seen, for the crossing test below. Undefined rather than a
 	// number, because obj_lantern's Create may run before obj_daylight's and
@@ -160,41 +158,18 @@ function lantern_step() {
 
 /// Swing it, on the same wind as everything else.
 ///
-/// A pendulum, integrated, rather than a sine wave shaped to look like one.
-/// The difference is worth the four lines: a sine is always exactly in step
-/// with the wind that drives it, so the lantern would change direction at the
-/// same instant the gust did. A pendulum has somewhere to keep momentum, so it
-/// lags the gust going out, overshoots coming back, and keeps swinging for a
-/// few seconds after the air has gone still. That lag is the whole difference
-/// between hanging and being animated.
+/// It reads global.wind through pendulum_step — the one gust in the scene, the
+/// same number that slants the rain and bends the grass and sways the trees. A
+/// lantern swinging on a wind of its own would be the thing that gives away
+/// that none of them are real.
 ///
-/// It reads global.wind, which is the one gust in the scene — the same number
-/// that slants the rain and bends the grass and sways the trees. A lantern
-/// swinging on a wind of its own would be the thing that gives away that none
-/// of them are real.
+/// Stiffness is g over the length of the chain, so 6.3 is about a two and a
+/// half second swing — what something this size on a chain this long would do.
 function lantern_sway_step() {
-	// Clamped, because the integration is explicit and a long frame — the
-	// first one after a shader compiles, say — would otherwise hand it a step
-	// big enough to throw the lantern over the top of its own arc.
-	var _dt = min(0.05, delta_time / 1000000);
-
-	// Stiffness is g over the length of the chain, and so sets the period: at
-	// 6.3 the lantern takes about two and a half seconds to swing and return,
-	// which is what something this size on a chain this long would do. Damping
-	// is low on purpose — a heavily damped lantern tracks the wind exactly and
-	// stops looking like it is hanging from anything.
-	var _k   = gmlmcp_tunable("lantern_stiff", 6.3);
-	var _c   = gmlmcp_tunable("lantern_damp",  0.9);
-	var _max = degtorad(gmlmcp_tunable("lantern_sway", 3.5));
-
-	// The wind's push, scaled so a full-strength steady gust would hold the
-	// lantern at the maximum angle. Gusts overshoot it, which is correct.
-	var _force = _max * _k * global.wind;
-
-	var _acc = _force - _k * global.lantern_ang - _c * global.lantern_vel;
-
-	global.lantern_vel += _acc * _dt;
-	global.lantern_ang += global.lantern_vel * _dt;
+	pendulum_step(global.lantern_pend,
+		gmlmcp_tunable("lantern_sway",  3.5),
+		gmlmcp_tunable("lantern_stiff", 6.3),
+		gmlmcp_tunable("lantern_damp",  0.9));
 }
 
 /// How far a row at screen y is carried sideways by the swing.
@@ -207,7 +182,7 @@ function lantern_sway_step() {
 /// Stepped, not smooth, which is the same rotation the rest of this scene's
 /// four-pixel grid would give anything else.
 function lantern_sway_at(_y) {
-	return sin(global.lantern_ang) * (_y - LANTERN_TOP);
+	return pendulum_offset(global.lantern_pend, _y - LANTERN_TOP);
 }
 
 /// One bar of the fitting, carried by the swing at its own height.

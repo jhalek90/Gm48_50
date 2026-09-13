@@ -29,4 +29,14 @@ function game_playing() {
 
 function game_start() {
 	global.playing = true;
+
+	// And deal a board on the way in, so the first thing the player hears is
+	// the game playing rather than an empty railing and a silent sweep. It is
+	// also the clearest possible statement of what the board is for: something
+	// is already running, and everything they do from here is a change to it
+	// rather than a blank page.
+	//
+	// The same deal the die gives, so the button is a repeat of the opening
+	// move rather than a feature they have to find.
+	seq_deal();
 }

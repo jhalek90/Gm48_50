@@ -169,6 +169,27 @@ function seq_randomise(_slots, _notes) {
 	}
 }
 
+/// Deal a fresh board, from anywhere.
+///
+/// seq_randomise works on the arrays it is handed, and those arrays belong to
+/// obj_sequencer — so this is the one place that knows where they live, and
+/// everything else only has to say "deal". Without it the title card would
+/// need to reach into the sequencer's instance variables to start a game,
+/// which is the sort of coupling that is fine once and unpickable by the
+/// fourth time.
+///
+/// Guarded on the instance existing, because the caller may be running before
+/// the room has finished building itself.
+function seq_deal() {
+	if (!instance_exists(obj_sequencer)) return;
+
+	with (obj_sequencer) {
+		seq_randomise(slots, notes);
+		dice_face = irandom_range(1, 6);
+		dirty     = true;
+	}
+}
+
 /// A die, in blocks.
 ///
 /// Drawn rather than given a sprite, for the same reason the instruments are:

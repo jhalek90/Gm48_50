@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_mist",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_mist",
+  "parent":{"name":"Gm48_50","path":"Gm48_50.yyp",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

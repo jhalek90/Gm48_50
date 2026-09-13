@@ -59,6 +59,11 @@ wood_piece(0, 660, room_width, room_height, merge_colour(_wood_dark, _wood, 0.35
 
 wood_end();
 
+// What has been left on the railing. After the timber, because it sits on it,
+// and out on the returns past either end of the sequencer's span — see
+// scr_clutter for why that boundary matters.
+clutter_draw();
+
 // --- What the railing throws at your feet ---------------------------------
 //
 // The sun crosses the sky on the far side of the lake and never leaves the

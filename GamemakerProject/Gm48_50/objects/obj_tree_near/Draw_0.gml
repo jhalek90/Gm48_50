@@ -1,0 +1,1 @@
+trees_draw(true);

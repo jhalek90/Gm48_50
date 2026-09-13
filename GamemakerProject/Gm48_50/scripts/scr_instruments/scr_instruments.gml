@@ -161,7 +161,7 @@ function instrument_count() {
 function instrument_play(_index, _screen_x, _screen_y, _z, _note) {
 	var _d = global.instruments[_index];
 	var _ax = (_screen_x - room_width * 0.5) * global.rain_audio_pan;
-	var _ay = (global.persp_horizon - _screen_y) * 0.25;
+	var _ay = (_screen_y - global.persp_horizon) * 0.25;
 	var _az = _z * global.rain_audio_depth;
 
 	audio_play_sound_at(

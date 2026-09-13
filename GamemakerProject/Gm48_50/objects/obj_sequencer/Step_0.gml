@@ -21,11 +21,7 @@ if (game_playing()) {
 
 	// The randomiser, which sits in the same row and is locked out the same way.
 	var _dice = seq_dice_at(mouse_x, mouse_y);
-	if (_dice && mouse_check_button_pressed(mb_left)) {
-		seq_randomise(slots, notes);
-		dice_face = irandom_range(1, 6);
-		dirty = true;
-	}
+	if (_dice && mouse_check_button_pressed(mb_left)) seq_deal();
 
 	// The lantern is locked out the same way, though it hangs at the roof line
 	// and the ledges are down at the railing. The two cannot overlap today —
@@ -74,7 +70,7 @@ if (game_playing()) {
 				// note and a played note are the same event seen from two places.
 				flash[_cell.track][_cell.step] = 1;
 				seq_throw_note(_cell.track, _cell.step, _semi);
-				seq_splash(_cell.track, _cell.step, sprSplatter);
+				seq_splash(_cell.track, _cell.step, sprSplatterWhite);
 			}
 		}
 		if (mouse_check_button_pressed(mb_right) && _row[_cell.step] != -1) {
@@ -114,7 +110,7 @@ while (acc >= _secs) {
 		// where the beat is before they have put anything on it — but a
 		// quieter one, so a full board still reads as busier than a bare one.
 		var _ins = slots[_t][playhead];
-		seq_splash(_t, playhead, (_ins < 0) ? sprSplashSmall : sprSplatter);
+		seq_splash(_t, playhead, (_ins < 0) ? sprSplashWhite : sprSplatterWhite);
 
 		if (_ins < 0) continue;
 

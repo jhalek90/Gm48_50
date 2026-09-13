@@ -12,6 +12,7 @@
 /// putting it in while there are six.
 application_surface_draw_enable(false);
 
+
 // The interface font, set once.
 //
 // Unlike colour, alpha and alignment — which every draw event here sets for

@@ -91,8 +91,24 @@ function trees_shadows() {
 	}
 }
 
+/// Is this tree nearer to the viewer than any rain in the scene?
+///
+/// The field starts at z_near, so a tree in front of that plane has nothing
+/// falling between it and the viewer at all — every drop belongs behind it.
+/// The near tree is the only thing in the scene like this, which is exactly
+/// why it was the one that looked wrong: drawn with the others it had the
+/// whole field raining over it.
+function tree_in_front_of_rain(_t) {
+	return (_t.z < global.persp_z_near);
+}
+
 /// Draw the stand.
-function trees_draw() {
+///
+/// `_near` picks which half: false for the trees standing in the rain, true
+/// for the one standing in front of all of it. Two passes at two depths with
+/// the near rain between them, which is the only way the field can have trees
+/// inside it rather than behind it.
+function trees_draw(_near) {
 	// Real elapsed time, like every other clock here, so the sway does not
 	// speed up or slow down with the frame rate.
 	global.trees_time += delta_time / 1000000;
@@ -112,6 +128,8 @@ function trees_draw() {
 
 	for (var _i = 0; _i < array_length(_list); _i++) {
 		var _t = _list[_i];
+		if (tree_in_front_of_rain(_t) != _near) continue;
+
 		var _n = sprite_get_number(_t.spr);
 
 		// Each tree runs its own clock, at its own rate and from its own offset

@@ -5,8 +5,19 @@
 /// itself; Post Draw is the first event that happens after it has been
 /// resolved and is the one place this blit can legally live.
 ///
-/// Stretched to the GUI size rather than the room size so the pass keeps
-/// working the day the window stops being exactly one room across.
+/// --- Where the surface goes -------------------------------------------
+///
+/// Asked for, not computed. It used to be stretched across the whole GUI,
+/// which is right only while the window happens to share the room's aspect.
+/// Go fullscreen on an ultrawide and the GUI is 2560x1080 against a 1366x768
+/// room, and the picture came out stretched a third wider than it should be.
+///
+/// application_get_position answers with the rectangle GameMaker itself would
+/// have drawn the surface into, letterboxing included. Using it rather than
+/// deriving the same thing by hand matters for more than tidiness: that is the
+/// rectangle GameMaker maps mouse_x and mouse_y through, so the picker, the
+/// faders and the board all stay clickable in fullscreen. Work the letterbox
+/// out independently and the interface would be off by the size of the bars.
 shader_set(shd_post);
 shader_set_uniform_f(u_levels, gmlmcp_tunable("post_levels", 0));
 
@@ -31,9 +42,16 @@ shader_set_uniform_f(u_ray_weight,  gmlmcp_tunable("ray_weight",  0.90));
 // about 0.83 luminance at the brightest hour, which is where this is set.
 shader_set_uniform_f(u_ray_thresh,  gmlmcp_tunable("ray_thresh",  0.83));
 
+var _at = application_get_position();
+
+// The bars either side. Cleared every frame because nothing else draws there,
+// and without it the letterbox holds whatever the back buffer had in it last.
+draw_clear(c_black);
+
 draw_surface_stretched(
-	application_surface, 0, 0,
-	display_get_gui_width(), display_get_gui_height()
+	application_surface,
+	_at[0], _at[1],
+	_at[2] - _at[0], _at[3] - _at[1]
 );
 
 shader_reset();

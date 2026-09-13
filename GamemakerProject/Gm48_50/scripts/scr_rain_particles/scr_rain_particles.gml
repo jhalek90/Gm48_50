@@ -58,25 +58,69 @@
 /// per-frame cost is a handful of property calls per band, not per drop.
 #macro RAIN_BANDS 28
 
-function rain_particles_init() {
-	global.rain_ps = part_system_create();
+/// The depth the rain is cut at, so the trees can stand inside it.
+///
+/// The field used to be one particle system at one depth, which meant every
+/// drop in the scene drew over every tree — including drops thirty units out,
+/// in front of a trunk two units away. Nothing sorted, because depth order is
+/// the whole of the sorting here and the whole field had one depth.
+///
+/// It is two systems now, with the trees in the gap between them:
+///
+///     beyond this   behind the stand         depth 55
+///     nearer        in front of everything   depth 20
+///
+/// 2.3 is the middle of the far stand, which sits between 2.05 and 2.56.
+/// Because depth is distributed uniformly, under two percent of drops land in
+/// front — but those are the long bright streaks, and they are the only ones
+/// big enough to read crossing a trunk anyway.
+///
+/// The near half goes in front of *everything*, the near tree included, and
+/// that last part is a cheat worth naming. The near tree is at 1.15 and the
+/// field starts at z_near 1.7, so on the geometry no drop in the scene belongs
+/// in front of it. But its depth is itself a framing cheat — scr_trees says so
+/// — and a tree at arm's length with nothing falling past it reads as a
+/// cut-out pasted over the weather.
+///
+/// A third layer between the two trees was tried and thrown away. It is where
+/// the strictly correct drops would go: nearer than the far stand, further
+/// than the near tree. There turned out to be no way to see the difference,
+/// and the whole visible effect was the drops it was withholding from the
+/// front.
+#macro RAIN_SPLIT_Z 2.3
 
-	// The same depth obj_rain drew at: between obj_scene at 60 and the porch at
-	// -100, so the rain is behind the railing you are sitting at and in front of
-	// the lake. Depth rather than a layer, so it goes through the normal draw
-	// pipeline and into the application surface — and therefore through
-	// shd_post, which posterises it with the rest of the picture.
-	part_system_depth(global.rain_ps, 30);
+function rain_particles_init() {
+	// Two systems, one either side of the stand of trees. Depths rather than
+	// layers, so both go through the normal draw pipeline and into the
+	// application surface — and therefore through shd_post, which posterises
+	// them with the rest of the picture.
+	//
+	// 55 is behind obj_trees at 50 and in front of obj_scene at 60; 20 is in
+	// front of obj_tree_near at 25 and so in front of both. Both stay well
+	// behind the porch at -100, so the rain is behind the railing you are
+	// sitting at whichever side of a tree it is on.
+	global.rain_ps_far   = part_system_create();
+	global.rain_ps_front = part_system_create();
+
+	part_system_depth(global.rain_ps_far,   55);
+	part_system_depth(global.rain_ps_front, 20);
 
 	global.rain_bands = [];
 
 	for (var _i = 0; _i < RAIN_BANDS; _i++) {
 		var _t = part_type_create();
 
-		// One emitter each. They are re-shaped every step rather than at
-		// creation, because the projection they are placed against is live —
-		// horizon, ground_k and the rest are all tunables.
-		var _e = part_emitter_create(global.rain_ps);
+		// An emitter on each system, rather than one on whichever system the
+		// band belongs to. A band's depth comes from live tunables and can move
+		// under it, and an emitter belongs to the system it was created on —
+		// so holding both means the band can change sides between frames
+		// without anything being rebuilt.
+		//
+		// They are re-shaped every step rather than at creation, because the
+		// projection they are placed against is live: horizon, ground_k and the
+		// rest are all tunables.
+		var _e_far   = part_emitter_create(global.rain_ps_far);
+		var _e_front = part_emitter_create(global.rain_ps_front);
 
 		part_type_sprite(_t, spr_rain_streak, false, false, false);
 		part_type_life(_t, 1, 1);
@@ -88,7 +132,8 @@ function rain_particles_init() {
 		// -x, which at a relative angle of zero is exactly behind the drop.
 		part_type_orientation(_t, 0, 0, 0, 0, true);
 
-		array_push(global.rain_bands, { type: _t, emitter: _e, z: 0, acc: 0 });
+		array_push(global.rain_bands,
+			{ type: _t, far: _e_far, front: _e_front, z: 0, acc: 0 });
 	}
 }
 
@@ -197,10 +242,18 @@ function rain_particles_update() {
 		part_type_colour1(_b.type, _col);
 		part_type_alpha1(_b.type, lerp(_a_far, _a_near, _s));
 
+		// Which layer this sheet falls in, and so which system its drops are
+		// emitted into. Particles already in the air keep the system they were
+		// born on, which is what should happen: a drop does not change which
+		// side of a tree it is on halfway down.
+		var _behind = (_z >= RAIN_SPLIT_Z);
+		var _ps = _behind ? global.rain_ps_far : global.rain_ps_front;
+		var _em = _behind ? _b.far : _b.front;
+
 		// A line across the top of the sheet, overshooting both edges so wind
 		// can blow drops in from off screen rather than having them wink into
 		// existence at the frame's edge.
-		part_emitter_region(global.rain_ps, _b.emitter,
+		part_emitter_region(_ps, _em,
 			-140, room_width + 140, _top, _top,
 			ps_shape_line, ps_distr_linear);
 
@@ -212,7 +265,7 @@ function rain_particles_update() {
 		var _n = floor(_b.acc);
 		if (_n > 0) {
 			_b.acc -= _n;
-			part_emitter_burst(global.rain_ps, _b.emitter, _b.type, _n);
+			part_emitter_burst(_ps, _em, _b.type, _n);
 		}
 	}
 }

@@ -35,6 +35,11 @@ water_reflect(spr_mountains, 0, _h,
 	merge_colour(global.pal.shore, global.pal.water, 0.55),
 	gmlmcp_tunable("reflect_alpha", 0.45));
 
+// Mist on the water, over both the range and the lake — it lies on the join
+// between them, and neither the sprite nor the water shader can reach across
+// that line. Before the rocks and the duck, which stand in it.
+mist_draw();
+
 // The rocks standing in the shallows. Before the duck rather than after,
 // because all of them sit further out than it does — depth order is the whole
 // of the sorting here, and a rock drawn over the bird would put it underwater.
@@ -69,9 +74,7 @@ rocks_draw(false);
 // a stone sitting further back than it.
 flowers_draw();
 
-// What the stand throws on the bank, before the stand itself.
-trees_shadows();
-
-// The trees on that bank. After the grass so they stand in it rather than
-// behind it, and inside this event so the rain object still falls in front.
-trees_draw();
+// The trees are not drawn here any more. They stand *inside* the rain — some
+// of the field in front of them, most of it behind — and depth order is the
+// whole of the sorting, so they have to be their own objects at their own
+// depths with the rain's two systems either side. See obj_trees.

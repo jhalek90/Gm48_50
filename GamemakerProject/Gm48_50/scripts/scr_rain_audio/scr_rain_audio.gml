@@ -22,11 +22,25 @@ function rain_audio_init() {
 	audio_falloff_set_model(audio_falloff_exponent_distance_clamped);
 
 	// The listener is the person on the porch: at the origin, looking out into
-	// the scene along +z. The up vector is left at GameMaker's default +y so
-	// the handedness stays the one it expects — screen y is flipped where it is
-	// passed in instead, which is one negation in one place.
+	// the scene along +z.
+	//
+	// The up vector is -y, not +y, and that is not a typo. GameMaker's audio
+	// is OpenAL underneath, which is right handed with -z forward — so looking
+	// along +z is a half turn, and a half turn swaps left and right. With the
+	// default up of +y the listener's right vector comes out as
+	//
+	//     at x up = (0,0,1) x (0,1,0) = (-1, 0, 0)
+	//
+	// which puts everything at positive x in the left ear. The whole scene was
+	// mirrored: objects on the right of the railing sounded on the left.
+	//
+	// Flipping up to -y makes that cross product (+1, 0, 0) and puts the stereo
+	// field the right way round. It also lands the vertical the right way up
+	// for free: with -y as up, world +y is down, and screen y already increases
+	// downward — so all three axes are now plain screen and scene coordinates
+	// and nothing has to be negated where sounds are played.
 	audio_listener_position(0, 0, 0);
-	audio_listener_orientation(0, 0, 1, 0, 1, 0);
+	audio_listener_orientation(0, 0, 1, 0, -1, 0);
 
 	global.rain_voice_budget = 0;
 }
@@ -83,7 +97,7 @@ function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 	global.rain_voice_budget -= 1;
 
 	var _ax = (_x - room_width * 0.5) * global.rain_audio_pan;
-	var _ay = (global.persp_horizon - _y) * 0.25;
+	var _ay = (_y - global.persp_horizon) * 0.25;
 	var _az = _z * global.rain_audio_depth;
 
 	// Two things move the pitch. Depth, because a near drop reads as a bigger,

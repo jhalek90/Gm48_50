@@ -1,4 +1,5 @@
 lantern_step();
+chime_step();
 
 // Not while the title card is up: any click starts the game there, and a
 // player who started it by clicking the lantern would arrive having already
