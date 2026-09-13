@@ -158,16 +158,27 @@ function trees_draw(_near) {
 
 	// How fast the sway strip is played, and how much of that the gust decides.
 	//
-	// The gust's share used to be 0.7, which took the top of the range to 10.4
-	// frames a second — a twenty frame loop in three seconds, on a pine tall
-	// enough to fill the frame. Big trees do not answer a gust that quickly;
-	// the mass is the whole reason a crown lags the air moving it, and at that
-	// rate the canopy read as shaking rather than as leaning.
+	// Written as a floor plus a share so the two ends can be set apart. The
+	// term pivots on still air — at wind_strength 0 the gust contributes
+	// nothing whatever tree_gust is — which means the ceiling can be brought
+	// down without touching the calm end at all. That is the only reason this
+	// is not simply a multiply.
 	//
-	// Only the ceiling comes down. The calm end was not the complaint and is
-	// left where it was, so still air looks exactly as it did.
+	// The share has come down twice. It was 0.7, a twenty frame loop in three
+	// seconds on a pine tall enough to fill the frame, which read as shaking
+	// rather than leaning; then 0.35, which was still too much at the top. Big
+	// trees do not answer a gust quickly — the mass is the whole reason a crown
+	// lags the air moving it — and the wind sits near its peak often enough
+	// that the top of the range is what you actually watch: strength is above
+	// 0.93 a twentieth of the time.
+	//
+	// At 0.15 the crown goes from a 6.7 second cycle in still air to 5.4 at the
+	// height of a gust. A quarter quicker, where it used to be nearly two
+	// thirds. The gust still reads — but the rest of the scene is carrying it
+	// too, in the grass, the rain's slant and everything hanging off the roof,
+	// so the trees do not have to shout it.
 	var _sway = gmlmcp_tunable("tree_sway", 8)
-		* (0.6 + gmlmcp_tunable("tree_gust", 0.35) * wind_strength());
+		* (0.6 + gmlmcp_tunable("tree_gust", 0.15) * wind_strength());
 	var _size = gmlmcp_tunable("tree_scale", 1.0);
 	var _list = global.trees;
 
