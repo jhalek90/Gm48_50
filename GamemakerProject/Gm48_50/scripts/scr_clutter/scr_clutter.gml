@@ -55,6 +55,22 @@
 /// are standing at is not in the picture — it is under you — and a mat that
 /// stops short with a strip of deck below it reads as a sample laid out for
 /// inspection rather than as something on the floor of the place you are in.
+/// The cat, asleep on the deck.
+///
+/// Bottom left, which is the one part of the floor nothing else wants: the rug
+/// starts at 356, the picker row at 316, and the left post ends at 96. It also
+/// puts the one living thing on this side of the railing in the corner your eye
+/// lands on last, which is where a sleeping animal should be found rather than
+/// presented.
+///
+/// CAT_Y is the deck line it lies on, not the top of it.
+/// Twice the block the rest of the clutter is drawn on. The cat is the nearest
+/// thing in the scene and the only one at the viewer's feet, so it is the one
+/// prop that would look like a miniature at the shared size.
+#macro CAT_X      200
+#macro CAT_Y      744
+#macro CAT_BLOCK    8
+
 #macro RUG_X1  356
 #macro RUG_X2 1004
 #macro RUG_Y1  676
@@ -62,6 +78,7 @@
 
 function clutter_draw() {
 	clutter_rug();
+	clutter_cat(CAT_X, CAT_Y);
 	clutter_rope(ROPE_X, CLUTTER_Y);
 	clutter_jar(JAR_X,  CLUTTER_Y);
 	clutter_plate(PLATE_X, PLATE_Y);
@@ -382,4 +399,140 @@ function clutter_jar(_cx, _by) {
 	draw_rectangle(_x - _b * 1.5, _y - _b * 8.5, _x + _b * 1.5, _y - _b * 7.5, false);
 	draw_set_colour(_lit);
 	draw_rectangle(_x - _b * 2, _y - _b * 9.5, _x + _b * 2, _y - _b * 8.5, false);
+}
+
+/// A cat, curled up and breathing.
+///
+/// Drawn as a stack of rows rather than an outline, the same way the jar and
+/// the rug are: a curve on this grid is a stack of rectangles, and drawing one
+/// any other way puts the only smooth edge in the picture on a cat.
+///
+/// The head sits mostly outside the body rather than inside it. That was the
+/// first attempt and it failed for a reason worth writing down: a head tucked
+/// within the silhouette is not a head, it is nothing, because a shape only
+/// reads where it breaks the outline of what is behind it. It laps the
+/// shoulder by two blocks, which is what says tucked.
+///
+/// It breathes. Everything else alive on this porch moves, and a cat holding
+/// perfectly still reads as an ornament of a cat. The upper rows lift by one
+/// block and settle again, which at this size is the smallest change the grid
+/// can show.
+///
+/// Not clickable. The duck answers, the chime answers, the lantern answers.
+/// Something asleep that does nothing when you poke it is the joke.
+function clutter_cat(_cx, _by) {
+	var _b = CAT_BLOCK;
+	var _x = floor(_cx / _b) * _b;
+	var _y = floor(_by / _b) * _b;
+
+	// Slower than a real cat. A real rate looks like panting at this size.
+	// Read off the shared scene clock rather than a private one.
+	//
+	// The step is 3 pixels, not one block. Tying it to the block meant the
+	// whole chest jumped 8 pixels at once at this size, which is a mouth
+	// opening rather than a breath. It is also spread over four rows instead of
+	// landing on one boundary, so the stretch is two small steps up the flank
+	// and not a seam across the middle of the animal.
+	var _lift = round(0.5 + 0.5 * sin(global.wind_time * 0.8)) * 3;
+
+	var _fur  = pal_lit(make_colour_rgb(118, 110, 104));
+	var _lit  = pal_lit(make_colour_rgb(158, 150, 142));
+	var _dark = pal_lit(make_colour_rgb( 78,  72,  68));
+	var _pink = pal_lit(make_colour_rgb(178, 134, 130));
+
+	draw_set_alpha(1);
+
+	// Which end the head is at. Away from the light, so the lit flank is the
+	// long curve of the back rather than the face.
+	var _face = (global.light.x < _x) ? 1 : -1;
+
+	// The body, bottom row up: how far it reaches toward the head, how far
+	// toward the tail, then how far it lifts with the breath.
+	//
+	// Two widths, not one. A symmetric mound put the head on a ramp and the
+	// whole animal read as a single hill with lumps on it, at every size and
+	// with any ears. A cat asleep is low at the head and high at the rump, so
+	// the front falls away and the back keeps its width to the top. That
+	// asymmetry is the shape; the ears only confirm it.
+	var _rows = [
+		[ 9.0, 9.5, 0], [ 9.0, 9.5, 0], [ 8.5, 9.5, 0],
+		[ 8.0, 9.5, 0], [ 7.0, 9.0, 0], [ 5.5, 8.5, 1],
+		[ 4.0, 8.0, 1], [ 2.5, 6.5, 2], [ 1.0, 4.5, 2],
+	];
+
+	// Each row's bottom edge takes the row below's lift, not its own, so the
+	// stack stays joined. Lifting a row by its own offset at both edges opens a
+	// gap under it, and the gap is deck: the first attempt drew a dark bar
+	// straight across the cat every time it breathed in.
+	for (var _i = 0; _i < array_length(_rows); _i++) {
+		var _f    = _rows[_i][0] * _b;
+		var _r    = _rows[_i][1] * _b;
+		var _top  = _rows[_i][2] * _lift;
+		var _base = (_i > 0) ? _rows[_i - 1][2] * _lift : 0;
+
+		draw_set_colour(_i < 2 ? _dark : _fur);
+		draw_rectangle(_x + _face * _f, _y - (_i + 1) * _b - _top,
+		               _x - _face * _r, _y -  _i      * _b - _base, false);
+	}
+
+	// The lit curve of the back, down the flank away from the face.
+	draw_set_colour(_lit);
+	draw_rectangle(_x - _face * _b * 1.5, _y - _b * 9 - _lift * 2,
+	               _x - _face * _b * 4.0, _y - _b * 8 - _lift * 2, false);
+	draw_rectangle(_x - _face * _b * 3.5, _y - _b * 8 - _lift * 2,
+	               _x - _face * _b * 6.0, _y - _b * 7 - _lift * 2, false);
+
+	// The head, at the front and low, lapping the shoulder by two blocks.
+	// Pushed out far enough to break the body's outline. At 8 blocks it sat
+	// almost entirely inside a body 9.5 wide and the whole front end read as
+	// one lump with two prongs on it.
+	var _hx = _x + _face * _b * 9.5;
+	var _ht = _y - _b * 4.5;
+
+	draw_set_colour(_fur);
+	draw_rectangle(_hx - _b * 3.0, _ht + _b * 0.5, _hx + _b * 3.0, _y, false);
+	draw_rectangle(_hx - _b * 2.5, _ht,            _hx + _b * 2.5, _ht + _b * 0.5, false);
+
+	// Ears, stepped rather than square, and the largest single thing on the
+	// head. At this distance the ears are most of what says cat: the body is a
+	// mound, and a mound with a small round lump on the front is any sleeping
+	// animal. Two steps is as close to a triangle as this grid allows, and it
+	// is enough. They stay well under the line of the back, or the head stops
+	// reading as a separate thing however far out it is moved.
+	//
+	// The gap between them matters as much as the shape. One block of fur
+	// showing through is what stops the pair reading as a single crest.
+	var _ear = [-2.25, 1.25];   // near ear, far ear, in blocks from head centre
+
+	for (var _e = 0; _e < 2; _e++) {
+		var _ex = _hx + _face * _b * _ear[_e];
+
+		draw_set_colour(_fur);
+		draw_rectangle(_ex, _ht - _b * 1.0, _ex + _face * _b * 1.75, _ht, false);
+		draw_rectangle(_ex + _face * _b * 0.25, _ht - _b * 2.0,
+		               _ex + _face * _b * 1.25, _ht - _b * 1.0, false);
+	}
+
+	// The inside of the near ear only. The far one is turned away.
+	draw_set_colour(_pink);
+	draw_rectangle(_hx - _face * _b * 1.75, _ht - _b * 1.25,
+	               _hx - _face * _b * 1.0,  _ht - _b * 0.25, false);
+
+	// Muzzle and chin, at the far end of the head and a shade lighter.
+	draw_set_colour(_lit);
+	draw_rectangle(_hx + _face * _b * 1.5, _y - _b * 2.0, _hx + _face * _b * 3.0, _y - _b * 0.5, false);
+
+	// The eye, closed. One line, and the single mark that says asleep rather
+	// than facing away.
+	draw_set_colour(_dark);
+	draw_rectangle(_hx - _face * _b * 0.5, _y - _b * 3.0,
+	               _hx + _face * _b * 1.0, _y - _b * 2.5, false);
+
+	// The tail, brought round the back and laid along the deck. Stepped,
+	// because a diagonal here is a stair and pretending otherwise costs the
+	// only smooth edge in the frame.
+	draw_set_colour(_dark);
+	draw_rectangle(_x - _face * _b *  7, _y - _b * 1.5, _x - _face * _b * 10.5, _y - _b * 0.5, false);
+	draw_rectangle(_x - _face * _b * 10, _y - _b * 3.0, _x - _face * _b * 11.5, _y - _b * 1.5, false);
+	draw_rectangle(_x - _face * _b * 11, _y - _b * 4.5, _x - _face * _b * 12.5, _y - _b * 3.0, false);
 }

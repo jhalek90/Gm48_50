@@ -91,6 +91,7 @@
     {"id":{"name":"F_C_F_A_","path":"sounds/F_C_F_A_/F_C_F_A_.yy",},},
     {"id":{"name":"snd_bell","path":"sounds/snd_bell/snd_bell.yy",},},
     {"id":{"name":"snd_bucket","path":"sounds/snd_bucket/snd_bucket.yy",},},
+    {"id":{"name":"snd_cat","path":"sounds/snd_cat/snd_cat.yy",},},
     {"id":{"name":"snd_click","path":"sounds/snd_click/snd_click.yy",},},
     {"id":{"name":"snd_drop","path":"sounds/snd_drop/snd_drop.yy",},},
     {"id":{"name":"snd_glass","path":"sounds/snd_glass/snd_glass.yy",},},
