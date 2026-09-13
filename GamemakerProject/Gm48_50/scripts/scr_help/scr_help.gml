@@ -68,7 +68,6 @@ function help_init() {
 		["", "KEYS"],
 		["T",         "hide the interface"],
 		["P",         "hold the day still"],
-		["up/down",   "rain level"],
 	];
 }
 
