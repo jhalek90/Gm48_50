@@ -1,9 +1,12 @@
-/// Rain, drawn between the distant scene and the porch you are sitting under.
+/// The weather.
 ///
-/// Depth sits between obj_scene (60) and obj_porch (-100), and below the room's
-/// Background layer at depth 100, which paints opaque black over anything
-/// further back than itself.
-depth = 30;
+/// This object no longer draws anything. The field is a particle system —
+/// see scr_rain_particles — which carries its own depth of 30, between
+/// obj_scene at 60 and the porch at -100, and below the room's Background
+/// layer at 100 which paints opaque black over anything further back.
+///
+/// What is left here is everything the particles cannot hold: the live
+/// projection, the surface registry the rain lands on, and the audio.
 
 // --- Projection -----------------------------------------------------------
 // Defaults live here and are re-read from the live tunables every step, so the
@@ -32,4 +35,4 @@ rain_bed_start();
 // while the rain on either side of it carries on down to the ground.
 surface_add(RAIL_Z_NEAR, RAIL_Z_FAR, -140, room_width + 140, RAIL_Y, "wood");
 
-drops = [];
+rain_particles_init();

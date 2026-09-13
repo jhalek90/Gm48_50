@@ -29,34 +29,16 @@ if (_nudge != 0) {
 
 rain_bed_update();
 
-var _want  = gmlmcp_tunable("rain_count", 2000);
-var _speed = gmlmcp_tunable("rain_speed", 30);
-var _wind  = gmlmcp_tunable("rain_wind",  -4) * (0.35 + 0.9 * wind_strength());
-var _rate  = gmlmcp_tunable("audio_rate", 14);
+// The voice budget is earned over time, not per frame, so the plinks stay
+// evenly spread instead of arriving in a clump every time a frame happens to
+// land many drops. The cap allows a short burst without letting a quiet spell
+// bank a flurry.
+global.rain_voice_budget = min(
+	global.rain_voice_budget + gmlmcp_tunable("audio_rate", 14) / game_get_speed(gamespeed_fps), 4);
 
-// Voices are earned over time, not per frame, so the plinks stay evenly spread
-// instead of arriving in a clump every time a frame happens to land many drops.
-// The cap allows a short burst without letting a quiet spell bank a flurry.
-global.rain_voice_budget = min(global.rain_voice_budget + _rate / game_get_speed(gamespeed_fps), 4);
-
-// Match the field to the live count, seeding new drops mid-fall so turning the
-// rain up does not show as a visible band of drops entering together.
-while (array_length(drops) < _want) array_push(drops, rain_new_drop(true));
-while (array_length(drops) > _want) array_pop(drops);
-
-for (var _i = 0, _n = array_length(drops); _i < _n; _i++) {
-	var _d = drops[_i];
-	var _s = persp_scale(_d.z);
-
-	// Both axes scale with depth, so near rain sweeps and far rain crawls from
-	// one set of numbers, and the wind shears the whole field consistently.
-	_d.y += _speed * _s;
-	_d.x += _wind * _s;
-
-	// A drop that arrives is heard and then reused. It used to leave a mark as
-	// well — see scr_rain for why it no longer does.
-	if (_d.y >= _d.land) {
-		rain_audio_hit(_d.x, _d.land, _d.z, _s, _d.kind);
-		drops[_i] = rain_new_drop(false);
-	}
-}
+// The field, and then the handful of landings picked out of it. Neither walks
+// a list of drops any more: the particles are advanced by the runtime, and the
+// audio asks the projection for landings directly rather than waiting to be
+// told about them.
+rain_particles_update();
+rain_audio_sample();

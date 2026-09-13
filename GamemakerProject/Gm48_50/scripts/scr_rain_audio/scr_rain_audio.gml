@@ -31,6 +31,41 @@ function rain_audio_init() {
 	global.rain_voice_budget = 0;
 }
 
+/// Pick the drops you hear, now that nothing is simulating drops.
+///
+/// The visible field is a particle system and particles cannot report back —
+/// there is no moment in GML where one of them lands. That turns out not to
+/// matter, because the plinks never came from the field in the first place.
+/// Thousands of drops arrived every second and the budget below let through
+/// about fourteen; the simulation was a very expensive random number generator.
+///
+/// So this asks for the landings directly. A candidate is a column and a depth
+/// drawn from the same distributions a drop was given at birth, put through
+/// landing_at to find what it would have struck, and handed to the same test
+/// that always decided whether a landing was audible. Same distribution of
+/// heard drops, at a dozen calls a second instead of a few thousand a frame —
+/// and it still gets the instruments right, because landing_at reads the live
+/// surface registry that the sequencer rebuilds when the board changes.
+function rain_audio_sample() {
+	// Only ever as many candidates as there is budget to spend. Each one that
+	// fails the weighting below is a drop that landed somewhere you did not
+	// happen to pick out, which is what the budget is describing.
+	var _tries = ceil(global.rain_voice_budget);
+
+	for (var _i = 0; _i < _tries; _i++) {
+		if (global.rain_voice_budget < 1) return;
+
+		// The same biased depth sample rain_new_drop used, so near drops are as
+		// rare here as they were in the field.
+		var _t = power(random(1), global.rain_depth_bias);
+		var _z = lerp(global.persp_z_near, global.persp_z_far, _t);
+		var _x = random_range(-140, room_width + 140);
+
+		var _land = landing_at(_x, _z);
+		rain_audio_hit(_x, _land.y, _z, persp_scale(_z), _land.kind);
+	}
+}
+
 /// A drop has landed. Decide whether it is one of the ones you hear.
 function rain_audio_hit(_x, _y, _z, _scale, _kind) {
 	// TEMP: individual drop hits are off while the bed is judged on its own.
