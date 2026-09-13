@@ -109,6 +109,7 @@
     {"id":{"name":"sndChimes","path":"sounds/sndChimes/sndChimes.yy",},},
     {"id":{"name":"sndDuck","path":"sounds/sndDuck/sndDuck.yy",},},
     {"id":{"name":"sndTorch","path":"sounds/sndTorch/sndTorch.yy",},},
+    {"id":{"name":"sleepingcat1","path":"sprites/sleepingcat1/sleepingcat1.yy",},},
     {"id":{"name":"spr_glow","path":"sprites/spr_glow/spr_glow.yy",},},
     {"id":{"name":"spr_mountains","path":"sprites/spr_mountains/spr_mountains.yy",},},
     {"id":{"name":"spr_rain_streak","path":"sprites/spr_rain_streak/spr_rain_streak.yy",},},
