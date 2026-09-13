@@ -156,7 +156,7 @@ function chime_ring(_i, _dx) {
 	var _y = (_t.y1 + _t.y2) * 0.5;
 	var _x = _t.x + chime_sway_at(_y);
 
-	var _semi = music_note_now(music_roll_notes());
+	var _semi = chime_note(_i);
 
 	var _ax = (_x - room_width * 0.5) * global.rain_audio_pan;
 	var _ay = (_y - global.persp_horizon) * 0.25;
@@ -211,6 +211,64 @@ function chime_tube(_i) {
 		y2:   _y1 + _len[_i],
 		half: _b,
 	};
+}
+
+/// Where a tube sits in the set by pitch, lowest first.
+///
+/// Derived from the lengths in chime_tube rather than written down beside
+/// them, so the two cannot disagree — and derived at all because the lengths
+/// are deliberately jumbled. They were jumbled to stop the set reading as
+/// manufactured, and that decision stands; this is what lets the notes be
+/// ordered anyway.
+///
+/// Counting how many tubes are longer than this one gives the rank directly:
+/// nothing is longer than the longest, so it comes out 0.
+function chime_tube_rank(_i) {
+	var _t = chime_tube(_i);
+	var _l = _t.y2 - _t.y1;
+
+	var _rank = 0;
+	for (var _j = 0; _j < CHIME_TUBES; _j++) {
+		var _o = chime_tube(_j);
+		if ((_o.y2 - _o.y1) > _l) _rank++;
+	}
+
+	return _rank;
+}
+
+/// What this tube is tuned to right now, in semitones from D.
+///
+/// Five notes in a row off the scale, one to a tube, rather than a fresh roll
+/// at every strike. A random note per tube meant the set could not be played:
+/// every sweep was a different five notes and two sweeps of the same tubes had
+/// nothing to do with each other. Handed a run instead, the chime becomes an
+/// instrument — sweep it and you get a chord, sweep it twice and you get the
+/// same chord, and the tube you brushed last time is the note you remember.
+///
+/// The run moves with the harmony. music_root_now says what chord the bar is
+/// sitting on and the run is centred on it, so whatever you play is the chord
+/// the music is already playing rather than merely the key it is in. Clamped
+/// to fit the pool, which is seven notes against five tubes: a centre near
+/// either end slides the window rather than running off it, and because the
+/// window is five of seven the root is always inside whatever it lands on.
+///
+/// Pitch goes with tube length, which is the physical truth about a chime —
+/// the long tube is the low note. Left to right the run therefore comes out
+/// shuffled, which is also the truth: sweep a real chime and you do not get a
+/// scale. The notes are the chord either way, and they overlap, so a sweep
+/// sounds like the chord it is rather than like a run up it.
+function chime_note(_i) {
+	var _pool = music_scale(day_phase_index(), music_section());
+	var _n    = array_length(_pool);
+	var _span = min(CHIME_TUBES, _n);
+
+	// Not in the pool means the tables were edited under it. Fall back to the
+	// bottom of the scale rather than refusing to sound.
+	var _root = max(0, music_degree_of(_pool, music_root_now()));
+
+	var _start = clamp(_root - (_span div 2), 0, _n - _span);
+
+	return _pool[_start + min(chime_tube_rank(_i), _span - 1)];
 }
 
 /// How far a row is carried sideways by the swing.

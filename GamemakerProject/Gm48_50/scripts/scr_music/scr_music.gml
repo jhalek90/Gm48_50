@@ -62,6 +62,44 @@ function music_scales_init() {
 	];
 }
 
+/// The chord root under this bar, in semitones from D.
+///
+/// music_rhythm is written as groups of four because that is how the piece is
+/// written, but for this the grouping is not the interesting part — what is
+/// wanted is "the bar the sequencer is on, what is underneath it". So the
+/// groups are walked as one flat run of bars and indexed by the bar count,
+/// which also means a group of some other length would work without this
+/// needing to know.
+///
+/// Read from global.seq_bar, so it answers for the same bar the playhead is
+/// on and the same one the chords would be struck on. Anything asking this is
+/// trying to agree with the music, and the bar count is what the music agrees
+/// with.
+///
+/// This is the first thing to read music_rhythm. The table has sat here since
+/// the scales were written, described as what the lead pools were chosen
+/// against; the wind chime is the first voice to ask it what the harmony
+/// actually is.
+function music_root_now() {
+	var _groups = global.music_rhythm[day_phase_index() mod DAY_PHASES];
+
+	var _total = 0;
+	for (var _i = 0; _i < array_length(_groups); _i++) {
+		_total += array_length(_groups[_i]);
+	}
+	if (_total <= 0) return 0;
+
+	var _k = ((global.seq_bar mod _total) + _total) mod _total;
+
+	for (var _i = 0; _i < array_length(_groups); _i++) {
+		var _g = _groups[_i];
+		if (_k < array_length(_g)) return _g[_k];
+		_k -= array_length(_g);
+	}
+
+	return 0;
+}
+
 /// Which half of the current phase the clock is in.
 function music_section() {
 	return min(MUSIC_SECTIONS - 1, floor(day_phase_progress() * MUSIC_SECTIONS));
