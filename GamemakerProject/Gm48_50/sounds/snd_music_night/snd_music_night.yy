@@ -10,7 +10,7 @@
   "compression":1,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":63.86,
+  "duration":32.064,
   "exportDir":"",
   "name":"snd_music_night",
   "parent":{

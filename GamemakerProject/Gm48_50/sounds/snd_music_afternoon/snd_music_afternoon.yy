@@ -10,7 +10,7 @@
   "compression":1,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":128.04,
+  "duration":32.064,
   "exportDir":"",
   "name":"snd_music_afternoon",
   "parent":{
