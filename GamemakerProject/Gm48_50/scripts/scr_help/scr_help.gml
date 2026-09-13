@@ -61,7 +61,7 @@ function help_init() {
 		["Roll",      "deal a random board"],
 		["", ""],
 		["", "THE PORCH"],
-		["drag sky",  "scrub the time of day"],
+		["drag sky",  "change the time of day"],
 		["sweep",     "the wind chime rings"],
 		["click",     "the duck, the lantern"],
 		["", ""],

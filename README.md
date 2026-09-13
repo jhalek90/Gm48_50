@@ -15,11 +15,11 @@ Source: **https://github.com/jhalek90/Gm48_50**
 
 ## The idea
 
-You stand on a covered porch above a lake in a rainstorm. The railing in front
+You are on a covered porch above a lake in a rainstorm. The railing in front
 of you is a step sequencer. Put a bucket on a step and the playhead strikes it
 once a bar, in key, in time with the music.
 
-You cannot make it sound bad. Every pitch comes from the scale the current track
+Every pitch comes from the scale the current track
 is in, so there is no wrong note to place.
 
 ## How it plays
@@ -27,16 +27,16 @@ is in, so there is no wrong note to place.
 The railing holds **8 steps**, one bar of music at 120 BPM. The playhead crosses
 it every 2 seconds.
 
-| Action | Control |
-|---|---|
-| Choose an instrument | `1` to `8`, or click the picker |
-| Place it | Left click a step |
-| Tune it up one scale degree | Left click it again |
-| Remove it | Right click |
-| Clear the board | `Backspace` |
-| Deal a random board | Click **Roll** |
-| Hide the interface | `T` |
-| Hold the day still | `P` |
+| Action                      | Control                         |
+| --------------------------- | ------------------------------- |
+| Choose an instrument        | `1` to `8`, or click the picker |
+| Place it                    | Left click a step               |
+| Tune it up one scale degree | Left click it again             |
+| Remove it                   | Right click                     |
+| Clear the board             | `Backspace`                     |
+| Deal a random board         | Click **Roll**                  |
+| Hide the interface          | `T`                             |
+| Hold the day still          | `P`                             |
 
 Clicking a placed object raises it one degree and wraps at the top of the scale.
 You cannot ask for the instrument already standing there, so the only thing a
@@ -60,12 +60,12 @@ midnight.
 
 ## Things that are not the board
 
-| Thing | What it does |
-|---|---|
-| The sky | Drag it to scrub time. The sun follows your pointer. |
+| Thing      | What it does                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------ |
+| The sky    | Drag it to change time. The sun follows your pointer.                                      |
 | Wind chime | Sweep the pointer through the tubes. They hold 5 notes of the chord the current bar is on. |
-| Duck | Click it. It answers in the same scale as the instruments. |
-| Lantern | Click it to switch. It lights itself at 18:00 and goes out at 05:00. |
+| Duck       | Click it. It answers in the same scale as the instruments.                                 |
+| Lantern    | Click it to switch. It lights itself at 18:00 and goes out at 05:00.                       |
 
 ## How it was made
 
@@ -76,8 +76,7 @@ below.
 
 **Audio.** Every instrument is one recorded sample, pitched by scale degree, so
 a single take covers the whole range. The guitar was recorded for the jam, along
-with the rest of the instrument samples and the three rhythm tracks. The rain is
-a recorded bed with individually positioned drops over it.
+with the rest of the instrument samples and the three rhythm tracks.
 
 **Art.** The scene is drawn in code rather than composed from sprites. The sky,
 the water, the grass and the porch timber are each a shader handed a palette
