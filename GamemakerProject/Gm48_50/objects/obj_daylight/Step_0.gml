@@ -23,7 +23,7 @@ if (game_playing()) {
 	// below so a click on it cannot also start a drag — the two do not overlap
 	// today, the button being up under the roof and the sky starting below it,
 	// but that was true of the picker and the ledges as well.
-	if (ui_shown() && !mixer_claims(mouse_x, mouse_y) &&
+	if (ui_shown() && !ui_claims(mouse_x, mouse_y) &&
 	    mouse_check_button_pressed(mb_left) && day_pause_at(mouse_x, mouse_y)) {
 		day_pause_toggle();
 	}
@@ -62,7 +62,7 @@ if (day_ui_shown() && game_playing()) {
 // dragging the sky would arrive having scrubbed it.
 if (game_playing()) {
 	if (mouse_check_button_pressed(mb_left) && !dragging &&
-	    !mixer_claims(mouse_x, mouse_y) && !day_pause_at(mouse_x, mouse_y) &&
+	    !ui_claims(mouse_x, mouse_y) && !day_pause_at(mouse_x, mouse_y) &&
 	    !lantern_at(mouse_x, mouse_y) && sky_at(mouse_x, mouse_y)) {
 		sky_drag = true;
 		sky_mx   = mouse_x;

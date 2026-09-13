@@ -1,0 +1,10 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_help",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_help",
+  "parent":{"name":"Render","path":"folders/Render.yy",},
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

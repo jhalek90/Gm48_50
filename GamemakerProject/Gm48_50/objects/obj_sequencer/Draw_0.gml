@@ -199,21 +199,8 @@ draw_text(_dcx, _by - 22, "Roll");
 // T is in it now. It was advertised on the day scrubber's help line and that
 // went with the bar, which left the key that hides the interface as the only
 // control in the game nothing mentioned.
-//
-// Solid white and shadowed, for the same reason the names are: it lies across
-// the rug, which is the busiest thing on the deck, and at the alpha it used to
-// carry it was a grey suggestion of a sentence.
-var _help = "1-" + string(instrument_count()) +
-	" pick   LMB place, click again to tune   RMB remove   Backspace clear   T hide UI";
-var _hx   = _px + pick_width() * 0.5;
-var _hy   = _by + _bw + 8;
-
-draw_set_colour(c_black);
-draw_set_alpha(0.6);
-draw_text(_hx + 2, _hy + 2, _help);
-
-draw_set_colour(c_white);
-draw_set_alpha(1);
-draw_text(_hx, _hy, _help);
-
+// The controls used to run along here as one line. They are in the panel
+// behind the question mark now, which is the only place they all fit: this
+// line could list what the board does and never had room for the sky, the
+// chime, the duck or the lantern.
 draw_set_halign(fa_left);

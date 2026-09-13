@@ -48,6 +48,19 @@ function ui_btn_x(_i) {
 	return room_width - 16 - UI_BTN_SIZE - _i * (UI_BTN_SIZE + UI_BTN_GAP);
 }
 
+/// Does any part of the interface own a click here?
+///
+/// The one question everything else asks. There are two modal panels now, the
+/// volume and the controls, and before this each of them had to be named
+/// separately at every site that acts on a click: the title card, the board,
+/// the lantern, the duck, the sky and the fullscreen button. Six sites times
+/// two panels is twelve places to forget one.
+///
+/// A panel added later goes in here and nowhere else.
+function ui_claims(_mx, _my) {
+	return mixer_claims(_mx, _my) || help_claims(_mx, _my);
+}
+
 /// Is the interface showing?
 ///
 /// T hides all of it, not just the day scrubber it used to live on. It was an

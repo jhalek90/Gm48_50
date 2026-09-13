@@ -372,8 +372,8 @@ function day_pause_draw() {
 
 	// The same panel treatment its two neighbours use, because they sit in a
 	// row and anything else would read as three interfaces.
-	draw_set_alpha((_hot || _on) ? 0.34 : 0.20);
-	draw_set_colour(c_black);
+	draw_set_alpha(1);
+	draw_set_colour(merge_colour(c_black, global.pal.water, 0.18));
 	draw_rectangle(PAUSE_X, PAUSE_Y, PAUSE_X + PAUSE_SIZE, PAUSE_Y + PAUSE_SIZE, false);
 
 	draw_set_colour((_hot || _on) ? UI_INK : c_black);

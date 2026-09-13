@@ -13,7 +13,7 @@ t += delta_time / 1000000;
 // Keys are not locked out, only clicks: the faders are dragged and the buttons
 // are pressed, so nothing up there is waiting on a keystroke, and "press any
 // key" has to keep meaning any key.
-var _taken = fullscreen_at(mouse_x, mouse_y) || mixer_claims(mouse_x, mouse_y);
+var _taken = fullscreen_at(mouse_x, mouse_y) || ui_claims(mouse_x, mouse_y);
 
 if (keyboard_check_pressed(vk_anykey) ||
     (mouse_check_button_pressed(mb_any) && !_taken)) {

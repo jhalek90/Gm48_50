@@ -13,7 +13,7 @@ wildlife_step();
 // volume panel is open — the same two locks every other clickable thing in
 // this scene carries. It needs no lock against the board: it was moved off the
 // ledge row precisely so the two could never want the same click.
-if (game_playing() && !mixer_claims(mouse_x, mouse_y) &&
+if (game_playing() && !ui_claims(mouse_x, mouse_y) &&
     mouse_check_button_pressed(mb_left) && duck_at(mouse_x, mouse_y)) {
 	duck_quack();
 }

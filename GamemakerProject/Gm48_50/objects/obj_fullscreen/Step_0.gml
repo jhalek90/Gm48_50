@@ -4,7 +4,7 @@
 // Locked out while the volume panel is open, like everything else: the first
 // click puts the panel away, and the second works the button. Dismissing a
 // panel and toggling the window on one click is the two-actions rule again.
-if (ui_shown() && !mixer_claims(mouse_x, mouse_y) &&
+if (ui_shown() && !ui_claims(mouse_x, mouse_y) &&
     mouse_check_button_pressed(mb_left) && fullscreen_at(mouse_x, mouse_y)) {
 	fullscreen_toggle();
 }

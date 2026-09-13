@@ -31,8 +31,12 @@ function fullscreen_draw() {
 
 	// The same panel treatment the picker buttons use, so it belongs to the
 	// same interface rather than looking like a browser chrome dropped on top.
-	draw_set_alpha(_hot ? 0.34 : 0.20);
-	draw_set_colour(c_black);
+	// Solid, not a tint. The row reaches across the lantern's chain, which
+	// hangs at 1204 and showed straight through a translucent panel and under
+	// the glyph on top of it. Tinted toward the water like the two modal
+	// panels, so the whole interface is one material.
+	draw_set_alpha(1);
+	draw_set_colour(merge_colour(c_black, global.pal.water, 0.18));
 	draw_rectangle(FS_X, FS_Y, FS_X + FS_SIZE, FS_Y + FS_SIZE, false);
 
 	draw_set_colour(_hot ? UI_INK : c_black);

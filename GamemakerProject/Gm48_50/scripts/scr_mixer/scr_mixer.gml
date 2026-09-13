@@ -200,8 +200,8 @@ function mixer_btn_draw() {
 
 	// The same panel treatment the fullscreen button uses, because they sit
 	// side by side and anything else would read as two interfaces.
-	draw_set_alpha((_hot || mixer_open()) ? 0.34 : 0.20);
-	draw_set_colour(c_black);
+	draw_set_alpha(1);
+	draw_set_colour(merge_colour(c_black, global.pal.water, 0.18));
 	draw_rectangle(MIX_BTN_X, MIX_BTN_Y, MIX_BTN_X + MIX_BTN_SIZE, MIX_BTN_Y + MIX_BTN_SIZE, false);
 
 	draw_set_colour((_hot || mixer_open()) ? UI_INK : c_black);

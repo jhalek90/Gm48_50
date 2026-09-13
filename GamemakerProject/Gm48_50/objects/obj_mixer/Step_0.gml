@@ -7,6 +7,9 @@
 if (ui_shown()) {
 	if (mouse_check_button_pressed(mb_left)) {
 		if (mixer_btn_at(mouse_x, mouse_y)) {
+			// One panel at a time. The two overlap in that corner, and two
+			// solid panels stacked there is worse than either alone.
+			help_close();
 			mixer_toggle();
 		} else if (mixer_open() && !mixer_panel_at(mouse_x, mouse_y)) {
 			// Click away to dismiss. That click does nothing else — while the
