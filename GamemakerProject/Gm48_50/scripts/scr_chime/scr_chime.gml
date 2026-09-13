@@ -40,6 +40,11 @@
 /// single position being re-picked by hand.
 #macro CHIME_BLOCK   4
 
+/// How far away it sounds. Nearer than the railing, because the cord runs off
+/// the top of the frame — the hook is somewhere in front of the roof, which is
+/// the whole reason it was hung that way.
+#macro CHIME_Z 1.4
+
 /// The tubes, as offsets across the disc and lengths down from it.
 ///
 /// Uneven on purpose, and not symmetric. A chime is tuned, so its tubes are
@@ -50,6 +55,15 @@
 function chime_init() {
 	global.chime_pend = pendulum_new();
 	global.chime_t    = 0;
+
+	// Where the pointer was last frame, and which tube it was on. The sweep is
+	// detected as a change of tube rather than as presence over one, so a
+	// pointer parked in the middle of the set is silent and a pointer dragged
+	// through it rings once per tube it passes — which is what your hand does
+	// to a chime.
+	global.chime_tube_last = -1;
+	global.chime_mx        = 0;
+	global.chime_my        = 0;
 }
 
 function chime_step() {
@@ -72,6 +86,131 @@ function chime_step() {
 		gmlmcp_tunable("chime_sway",   4.0),
 		gmlmcp_tunable("chime_stiff",  9.0),
 		gmlmcp_tunable("chime_damp",   0.7));
+
+	chime_sweep();
+}
+
+/// Ring whatever the pointer just went through.
+///
+/// Not a click. A chime is the one thing on this porch you play by brushing
+/// past it, and asking for a button press would turn the one gesture in the
+/// game that is not a button press into another button.
+///
+/// The trigger is a *change* of tube, so the length of a sweep decides how many
+/// notes come out of it: across the top, where every tube is present, you get
+/// five; low down you only catch the two long ones, because that is all that
+/// hangs that far. A pointer that stops ringing nothing follows from the same
+/// rule, without needing a timer to say so.
+///
+/// Movement is required as well as a new tube. The set swings on its own, so a
+/// parked pointer near an edge would otherwise have tubes drift across it and
+/// the chime would sit there playing itself at whoever left the mouse there.
+function chime_sweep() {
+	var _moved = (mouse_x != global.chime_mx || mouse_y != global.chime_my);
+	var _dx    = mouse_x - global.chime_mx;
+
+	global.chime_mx = mouse_x;
+	global.chime_my = mouse_y;
+
+	var _i = _moved ? chime_tube_at(mouse_x, mouse_y) : global.chime_tube_last;
+
+	if (_i >= 0 && _i != global.chime_tube_last) chime_ring(_i, _dx);
+
+	global.chime_tube_last = _i;
+}
+
+/// Which tube a screen point is on, or -1.
+///
+/// Grabbed wider than the tube is drawn, and for a different reason than the
+/// lantern's grow: the tubes stand about eighteen pixels apart and are eight
+/// wide, so at their drawn width a fast sweep would skip between them and ring
+/// two out of five. Widened to most of the gap, a sweep catches every tube it
+/// crosses and the sound follows the hand instead of sampling it.
+///
+/// Each tube is tested against its own length, not the longest. Carried by the
+/// swing, too — the tube you can ring has to be where the tube looks.
+function chime_tube_at(_mx, _my) {
+	for (var _i = 0; _i < CHIME_TUBES; _i++) {
+		var _t = chime_tube(_i);
+		if (_my < _t.y1 || _my > _t.y2) continue;
+
+		var _tx = _t.x + chime_sway_at((_t.y1 + _t.y2) * 0.5);
+		if (abs(_mx - _tx) <= _t.half * 2.2) return _i;
+	}
+	return -1;
+}
+
+/// Strike one tube.
+///
+/// The note is rolled through music_roll_notes and read at the current instant,
+/// the same way a placed instrument's and the duck's are, so the chime is in
+/// the same scale and the same section and changes key at the same handover.
+///
+/// And it gets pushed. A chime that answers a hand sweeping through it without
+/// moving is the thing that gives away that the swing is a decoration — so the
+/// pointer's own travel goes into the pendulum, capped, because the mouse can
+/// cross the whole set in one frame and a raw delta would throw the tubes over
+/// the top of their arc.
+function chime_ring(_i, _dx) {
+	var _t = chime_tube(_i);
+	var _y = (_t.y1 + _t.y2) * 0.5;
+	var _x = _t.x + chime_sway_at(_y);
+
+	var _semi = music_note_now(music_roll_notes());
+
+	var _ax = (_x - room_width * 0.5) * global.rain_audio_pan;
+	var _ay = (_y - global.persp_horizon) * 0.25;
+	var _az = CHIME_Z * global.rain_audio_depth;
+
+	audio_play_sound_at(
+		sndChimes, _ax, _ay, _az,
+		90, 1400, 1,
+		false, 6,
+		gmlmcp_tunable("chime_gain", 0.9) * mix_sfx(), undefined,
+		power(2, (gmlmcp_tunable("chime_tune", 0) + _semi) / 12)
+	);
+
+	// Each tube takes a little of the hand's travel, and the total is capped.
+	// One tube's worth is small on purpose: a sweep rings several in a row, all
+	// pushing the same way, so anything that felt right as a single shove would
+	// put the set over the top of its arc by the fifth. The clamp is the only
+	// thing standing between a fast scrub across the tubes and a chime spinning
+	// round its own hook.
+	var _p = global.chime_pend;
+	_p.vel = clamp(_p.vel + clamp(_dx, -40, 40) * gmlmcp_tunable("chime_push", 0.005),
+		-1.0, 1.0);
+
+	// The note it just sounded, thrown like everything else here that plays a
+	// pitch, so a swept chime reads back in the same colours the board does.
+	var _look = music_note_look(_semi);
+	notepuff_add(_x, _t.y1 - 16, _look.colour, _look.label);
+}
+
+/// One tube, as the rectangle it hangs in before the swing carries it.
+///
+/// Offsets and lengths are fixed rather than hashed: there are five of them and
+/// they were placed by hand, which is what a chime is. Uneven on purpose and
+/// not symmetric — a chime is tuned, so its tubes are deliberately different
+/// lengths, and a set running short to long left to right looks manufactured
+/// where a jumble looks hung by hand.
+///
+/// Said once, here, because the drawing is no longer the only thing that needs
+/// it: you can sweep a pointer through them now, and a tube you can ring has to
+/// be the tube you can see. Two copies of this table is two places for them to
+/// come apart.
+function chime_tube(_i) {
+	var _b  = CHIME_BLOCK;
+	var _y1 = CHIME_TOP + CHIME_DROP + _b * 2;
+
+	var _off = [-4.5, -2.2,  0.2,  2.6,  4.8];
+	var _len = [  52,   80,   62,   92,   68];
+
+	return {
+		x:    floor(CHIME_X / _b) * _b + _off[_i] * _b * 2,
+		y1:   _y1,
+		y2:   _y1 + _len[_i],
+		half: _b,
+	};
 }
 
 /// How far a row is carried sideways by the swing.
@@ -116,16 +255,12 @@ function chime_draw() {
 	// from a different direction.
 	var _side = (global.light.x < _cx) ? -1 : 1;
 
-	// The tubes. Offsets and lengths are fixed rather than hashed: there are
-	// five of them and they were placed by hand, which is what a chime is.
-	var _off = [-4.5, -2.2,  0.2,  2.6,  4.8];
-	var _len = [   0,    0,     0,    0,    0];
-	_len[0] = 52; _len[1] = 80; _len[2] = 62; _len[3] = 92; _len[4] = 68;
-
+	// The tubes, from the one table chime_tube keeps.
 	for (var _i = 0; _i < CHIME_TUBES; _i++) {
-		var _tx = _cx + _off[_i] * _b * 2;
-		var _y1 = _dy + _b * 2;
-		var _y2 = _y1 + _len[_i];
+		var _t  = chime_tube(_i);
+		var _tx = _t.x;
+		var _y1 = _t.y1;
+		var _y2 = _t.y2;
 
 		chime_bar(_tx, _y1, _y2, _b, _tube);
 

@@ -156,7 +156,18 @@ function trees_draw(_near) {
 	// toward. The lake, because that is what is behind every one of them.
 	var _fog  = global.pal.water;
 
-	var _sway = gmlmcp_tunable("tree_sway",  8) * (0.6 + 0.7 * wind_strength());
+	// How fast the sway strip is played, and how much of that the gust decides.
+	//
+	// The gust's share used to be 0.7, which took the top of the range to 10.4
+	// frames a second — a twenty frame loop in three seconds, on a pine tall
+	// enough to fill the frame. Big trees do not answer a gust that quickly;
+	// the mass is the whole reason a crown lags the air moving it, and at that
+	// rate the canopy read as shaking rather than as leaning.
+	//
+	// Only the ceiling comes down. The calm end was not the complaint and is
+	// left where it was, so still air looks exactly as it did.
+	var _sway = gmlmcp_tunable("tree_sway", 8)
+		* (0.6 + gmlmcp_tunable("tree_gust", 0.35) * wind_strength());
 	var _size = gmlmcp_tunable("tree_scale", 1.0);
 	var _list = global.trees;
 

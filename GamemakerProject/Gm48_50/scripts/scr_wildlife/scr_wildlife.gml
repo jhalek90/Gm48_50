@@ -173,9 +173,39 @@ function bird_wing(_x, _y, _side, _s, _f, _px) {
 // One, not a flock. A single bird working a whole lake is calm; four of them
 // is a pond at a park.
 
+/// How far out the duck works.
+///
+/// Further out than it used to be, and the reason is the board rather than the
+/// composition. The instrument ledge is a rectangle 46 tall standing on
+/// RAIL_Y, and at z 3.8 the duck swam entirely inside it — every click that
+/// landed on the bird dropped an instrument on the step behind it instead.
+///
+/// The lantern solves that kind of collision by being tested first and locking
+/// the ledges out beneath it, but the lantern does not move. A duck does, right
+/// across the playable width, so that fix would have dragged a hole in the
+/// board around the lake with it. Better that it simply is not there.
+///
+/// z 7.3 puts it at ground_y 371 — well clear of the ledge's top edge at 402,
+/// and about a duck and a half above where it was, which is the room it needed
+/// to stop reading as part of the railing row.
+///
+/// DUCK_LEN and DUCK_H are the compensation, and the only thing keeping the
+/// bird visible: apparent size is DUCK_LEN * persp_scale(DUCK_Z), so every
+/// step further out has to be paid for or the duck shrinks to nothing. At the
+/// original 46 by 12 it would be ten pixels of hull out here, and a target you
+/// cannot find is no more clickable than one you cannot hit.
+///
+/// That does make it a large duck in world units. It is the only thing at this
+/// depth — the rocks and the dock are all inside z 3 — so there is nothing out
+/// there for it to be out of scale against, and a bird you can see beats a
+/// bird that measures correctly against the far bank.
+#macro DUCK_Z   7.3
+#macro DUCK_LEN 76
+#macro DUCK_H   20
+
 function duck_init() {
 	global.duck = {
-		z:     3.8,
+		z:     DUCK_Z,
 		x:     room_width * 0.42,
 		dir:   1,
 		phase: random(2 * pi),
@@ -214,10 +244,13 @@ function duck_draw() {
 	var _a = 0.28 + 0.72 * wildlife_day();
 
 	// Riding the same clock the lake does, so it lifts with the water rather
-	// than bobbing to a rhythm of its own.
-	var _y = ground_y(_d.z) + sin(global.water_time * 1.4 + _d.phase) * 1.6 * _s;
-	var _x = floor(_d.x / _px) * _px;
-	_y = floor(_y / _px) * _px;
+	// than bobbing to a rhythm of its own. Taken from duck_point rather than
+	// worked out again here, so the bird and the thing you can click on it are
+	// the same bird — two copies of one bob would drift apart the first time
+	// either was touched.
+	var _p = duck_point();
+	var _x = floor(_p.x / _px) * _px;
+	var _y = floor(_p.y / _px) * _px;
 
 	var _hz   = far_haze(_d.z, 0.30);
 	var _body = merge_colour(pal_lit(make_colour_rgb(104, 76, 52)),
@@ -225,8 +258,8 @@ function duck_draw() {
 	var _head = merge_colour(pal_lit(make_colour_rgb(40, 52, 46)),
 		global.pal.water, _hz);
 
-	var _w = max(_px * 3, round(46 * _s / _px) * _px);   // body length
-	var _h = max(_px * 2, round(12 * _s / _px) * _px);   // body height
+	var _w = max(_px * 3, round(DUCK_LEN * _s / _px) * _px);   // body length
+	var _h = max(_px * 2, round(DUCK_H   * _s / _px) * _px);   // body height
 	var _f = _d.dir;                                      // which way it faces
 
 	draw_set_alpha(_a * 0.22);
@@ -257,6 +290,79 @@ function duck_draw() {
 	draw_rectangle(_nx + _f * _px, _y - _h * 1.9, _nx + _f * _px * 2, _y - _h * 1.5, false);
 
 	draw_set_alpha(1);
+}
+
+/// Where the duck is drawn, as a screen point.
+///
+/// The one answer both the drawing and the hit test read, so the bird you can
+/// click is the bird you can see — the same arrangement the ledges, the picker
+/// and the faders all keep. Without it the target would sit still at the
+/// average of a bob while the duck rode up and down through it.
+function duck_point() {
+	var _d = global.duck;
+	return {
+		x: _d.x,
+		y: ground_y(_d.z) + sin(global.water_time * 1.4 + _d.phase) * 1.6 * persp_scale(_d.z),
+	};
+}
+
+/// Is this screen position on the duck?
+///
+/// Grown well past the bird, which is about fourteen pixels of hull at this
+/// distance. This is a thing you notice and reach for once, not a target worth
+/// being precise about — the same call the lantern's hit test makes.
+///
+/// The bottom edge is held above the ledge row rather than padded evenly. The
+/// padding is there to make a small thing catchable, and it must not buy that
+/// by quietly taking a bite out of the board underneath.
+function duck_at(_mx, _my) {
+	var _p = duck_point();
+	var _s = persp_scale(global.duck.z);
+	var _w = DUCK_LEN * _s * 0.5 + 14;
+
+	var _top = _p.y - DUCK_H * _s * 2.2 - 12;
+	// The ledge's own top edge, read from the track rather than written down
+	// again. A hand-copied 46 here would go stale the day the row is resized
+	// and hand the board back a strip of the duck's padding without saying so.
+	var _k   = global.tracks[0];
+	var _bot = min(_p.y + DUCK_H * _s + 10, _k.y - _k.size - 2);
+
+	return (_mx >= _p.x - _w && _mx <= _p.x + _w && _my >= _top && _my <= _bot);
+}
+
+/// Say something, in key.
+///
+/// The note is rolled through music_roll_notes and read at the current instant
+/// exactly as a placed instrument's is, so the duck is in the same scale, in
+/// the same section, and changes key at the same handover. Anything else — a
+/// fixed pitch, or its own little table — would make the one thing in the
+/// scene that answers you the one thing not in tune with it.
+///
+/// Positioned by the same three lines instrument_play uses rather than played
+/// flat, because it is out on the lake and has to sound like it. That is also
+/// why the bird had to be mono: GameMaker will not place a stereo sound.
+function duck_quack() {
+	var _p    = duck_point();
+	var _semi = music_note_now(music_roll_notes());
+
+	var _ax = (_p.x - room_width * 0.5) * global.rain_audio_pan;
+	var _ay = (_p.y - global.persp_horizon) * 0.25;
+	var _az = global.duck.z * global.rain_audio_depth;
+
+	audio_play_sound_at(
+		sndDuck, _ax, _ay, _az,
+		90, 1400, 1,
+		false, 6,
+		gmlmcp_tunable("duck_gain", 1.2) * mix_sfx(), undefined,
+		power(2, (gmlmcp_tunable("duck_tune", 0) + _semi) / 12)
+	);
+
+	// And it throws the note it just sounded, like everything else here that
+	// plays a pitch. The colour is the scale degree, so a duck answering on the
+	// root comes up the same colour a bucket on the root does — which is the
+	// whole point of it being in the same scale.
+	var _look = music_note_look(_semi);
+	notepuff_add(_p.x, _p.y - 26, _look.colour, _look.label);
 }
 
 // --- Fireflies -----------------------------------------------------------

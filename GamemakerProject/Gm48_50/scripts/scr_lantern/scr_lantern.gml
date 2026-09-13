@@ -33,6 +33,11 @@
 /// The block the lantern is drawn on, matching the scene's posterise grid.
 #macro LANTERN_BLOCK   4
 
+/// How far away it sounds. Near, like the chime: the chain runs off the top of
+/// the frame rather than ending at a beam you can see, which puts the hook out
+/// in front of the roof and the lamp within arm's reach.
+#macro LANTERN_Z 1.4
+
 /// When it lights itself, and when it puts itself out.
 #macro LANTERN_ON_HOUR   18
 #macro LANTERN_OFF_HOUR   5
@@ -135,8 +140,34 @@ function lantern_at(_mx, _my) {
 	        _my >= _top - 28 && _my <= _top + LANTERN_H);
 }
 
+/// Switch it, and let it be heard.
+///
+/// The sound lives here and not beside the two lines in lantern_auto that do
+/// the same thing at dusk and dawn, and that is deliberate. This function is
+/// the player reaching up and working the lamp; those are the clock arriving at
+/// six. A lantern that lit itself with a strike would be odd on its own, and
+/// under a scrub it would be worse than odd — dragging the sky through a week
+/// would fire one for every crossing.
+///
+/// Positioned like everything else that makes a noise out here, so it comes
+/// from the right-hand side where the lamp actually hangs. Unpitched, unlike
+/// the duck and the chime: this is a mechanism, not a voice, and putting it in
+/// the scale would make the porch light sound like an instrument.
 function lantern_toggle() {
 	global.lantern_on = !global.lantern_on;
+
+	var _y = lantern_body_y() + LANTERN_H * 0.4;
+	var _x = LANTERN_X + lantern_sway_at(_y);
+
+	audio_play_sound_at(
+		sndTorch,
+		(_x - room_width * 0.5) * global.rain_audio_pan,
+		(_y - global.persp_horizon) * 0.25,
+		LANTERN_Z * global.rain_audio_depth,
+		90, 1400, 1,
+		false, 6,
+		gmlmcp_tunable("lantern_gain", 0.9) * mix_sfx()
+	);
 }
 
 function lantern_step() {
