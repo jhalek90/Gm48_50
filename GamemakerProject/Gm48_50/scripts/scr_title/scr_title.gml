@@ -236,6 +236,86 @@ function toast_draw() {
 	draw_set_valign(fa_top);
 }
 
+/// The wordmark.
+///
+/// Drawn by both screens that show it, the gate and the title card, so the game
+/// cannot end up wearing its name at two sizes. Only the position differs.
+///
+/// Sets fntLogo and puts fntPixels back. The font is global draw state and
+/// obj_render sets fntPixels once for the whole game because the interface only
+/// ever wants that one; leaving fntLogo set would hand it to every UI event on
+/// the following frame.
+///
+/// Scaled to a target width rather than by a fixed multiplier, so a
+/// regenerated fntLogo comes out sharper at the same size on screen rather than
+/// larger.
+///
+/// The ink is 0.77 luminance and that is not a taste decision. The wordmark
+/// sits above the horizon, where shd_post takes its light sources, and white
+/// letters would put every stroke over the 0.83 threshold and smear a copy of
+/// the name across the sky toward the sun.
+/// Bone white, 0.77 luminance. Not a taste decision: see the note above.
+#macro TITLE_INK make_colour_rgb(202, 196, 182)
+
+function title_wordmark(_cy) {
+	var _name = "Petrichord";
+	var _cx   = room_width * 0.5;
+
+	draw_set_font(fntLogo);
+	draw_set_halign(fa_center);
+	draw_set_valign(fa_middle);
+
+	var _s = gmlmcp_tunable("title_size", 560) / max(1, string_width(_name));
+
+	draw_set_colour(c_black);
+	draw_set_alpha(0.45);
+	draw_text_transformed(_cx + 6, _cy + 6, _name, _s, _s, 0);
+
+	draw_set_colour(TITLE_INK);
+	draw_set_alpha(1);
+	draw_text_transformed(_cx, _cy, _name, _s, _s, 0);
+
+	// The bottom of the letters, for anything that wants to sit under them.
+	// Measured while fntLogo is still set: once the font is put back, the same
+	// call would measure the interface face instead and answer for the wrong
+	// text entirely.
+	var _bottom = _cy + string_height(_name) * _s * 0.5;
+
+	draw_set_font(fntPixels);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
+
+	return _bottom;
+}
+
+/// A line under the wordmark, in the same face.
+///
+/// Its own function for the same reason the wordmark is: it is drawn in fntLogo
+/// and the font is global draw state, so the setting and the putting back
+/// belong together rather than at opposite ends of somebody's draw event.
+function title_line(_msg, _y, _alpha, _target) {
+	var _cx = room_width * 0.5;
+
+	draw_set_font(fntLogo);
+	draw_set_halign(fa_center);
+	draw_set_valign(fa_middle);
+
+	var _s = _target / max(1, string_width(_msg));
+
+	draw_set_colour(c_black);
+	draw_set_alpha(_alpha * 0.5);
+	draw_text_transformed(_cx + 3, _y + 3, _msg, _s, _s, 0);
+
+	draw_set_colour(TITLE_INK);
+	draw_set_alpha(_alpha);
+	draw_text_transformed(_cx, _y, _msg, _s, _s, 0);
+
+	draw_set_alpha(1);
+	draw_set_font(fntPixels);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
+}
+
 // --- The gate screen -----------------------------------------------------
 
 /// Where the button sits, and how big it is.
@@ -269,6 +349,10 @@ function gate_draw() {
 	draw_set_colour(make_colour_rgb(14, 12, 14));
 	draw_set_alpha(1);
 	draw_rectangle(0, 0, room_width, room_height, false);
+
+	// The name, at the same size the title card wears it. A door with nothing
+	// on it is a door to nowhere, and this is the first thing anybody sees.
+	title_wordmark(gmlmcp_tunable("gate_title_y", 236));
 
 	var _hot = gate_at(mouse_x, mouse_y);
 
