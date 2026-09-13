@@ -32,35 +32,40 @@ function trees_init() {
 	// their bases land on one row and their tops on another, and the stand
 	// reads as a hedge cut out and pasted along the waterline.
 	global.trees = [
-		// The far pair. The small one sits behind and above; the big one below
-		// stands in front of it and cuts across it. One tree passing behind
-		// another is the strongest depth cue available here, stronger than size,
-		// because it cannot be read as the tree simply being a smaller tree.
-		{ spr: sprTree4504, x: 1020, z: 2.56, crown: 225, rate: 0.62, phase: 0.87 },
-
-		// The lone one, small and far, with open water either side. The gaps are
-		// the composition: a stand with no space in it has no silhouette.
-		{ spr: sprTree7463, x:  473, z: 2.52, crown: 195, rate: 0.51, phase: 0.44 },
+		// Three of them, all pushed to the edges. There were five, and the two
+		// that went were the two nearest the middle of the frame — which is
+		// also the only part of the view worth keeping clear, since it is where
+		// the lake, the far range and anything moving on the water are. A stand
+		// that runs evenly across the opening is a hedge; one that holds the
+		// two sides and leaves the centre open is a window.
+		//
+		// The far pair. The smaller sits behind and above, the larger in front
+		// of it and cutting across. One tree passing behind another is the
+		// strongest depth cue available here, stronger than size, because it
+		// cannot be read as the tree simply being a smaller tree — which is why
+		// these two are the pair that stayed.
+		{ spr: sprTree4504, x: 1020, z: 2.56, crown: 330, rate: 0.62, phase: 0.87 },
 
 		// The right edge, cut by the porch post and running off the frame, so
 		// the view is closed on both sides rather than only on the left.
-		{ spr: sprTree3512, x: 1288, z: 2.30, crown: 265, rate: 0.55, phase: 0.61 },
-
-		// Front of the far pair.
-		{ spr: sprTree5186, x:  863, z: 2.05, crown: 300, rate: 0.48, phase: 0.34 },
+		{ spr: sprTree3512, x: 1288, z: 2.30, crown: 375, rate: 0.55, phase: 0.61 },
 
 		// The near tree, and the reason the list is ordered at all. Most of it
 		// is off the left edge on purpose: it frames the view and gives the eye
 		// something at arm length to read the distance of everything else
-		// against. What stays on screen has to be big enough to read as one
-		// mass, because the porch post cuts across it — smaller, and the post
-		// breaks the canopy into slivers and it stops looking like a tree.
+		// against. That job matters more now than it did with five, because
+		// with the middle cleared it is the only thing left holding the left
+		// side of the frame at all.
+		//
+		// What stays on screen has to be big enough to read as one mass,
+		// because the porch post cuts across it — smaller, and the post breaks
+		// the canopy into slivers and it stops looking like a tree.
 		//
 		// Its z is nearer than z_near, which nothing else in the scene is. That
 		// is deliberate. Its base lands below the bottom of the screen and the
 		// porch draws over it, so none of the projection is on show; pulling it
 		// back to a legal depth costs the framing and buys nothing.
-		{ spr: sprTree7766, x:  -80, z: 1.15, crown: 380, rate: 0.34, phase: 0.13 },
+		{ spr: sprTree7766, x:  -80, z: 1.15, crown: 470, rate: 0.34, phase: 0.13 },
 	];
 
 	global.trees_time = 0;

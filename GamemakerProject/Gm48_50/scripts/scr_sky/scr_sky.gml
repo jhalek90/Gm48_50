@@ -196,7 +196,7 @@ function sky_draw(_y1, _y2) {
 	shader_set_uniform_f(_u.levels,    max(2, gmlmcp_tunable("sky_levels",  5)));
 	shader_set_uniform_f(_u.sky_bands, max(2, gmlmcp_tunable("sky_bands",  14)));
 	shader_set_uniform_f(_u.scale,     gmlmcp_tunable("cloud_scale",   1.0));
-	shader_set_uniform_f(_u.speed,     gmlmcp_tunable("cloud_speed",   0.35));
+	shader_set_uniform_f(_u.speed,     gmlmcp_tunable("cloud_speed",   0.16));
 	shader_set_uniform_f(_u.stretch,   gmlmcp_tunable("cloud_stretch", 1.0));
 	shader_set_uniform_f(_u.cover,     gmlmcp_tunable("cloud_cover",   0.55));
 	shader_set_uniform_f(_u.soft,      gmlmcp_tunable("cloud_soft",    0.12));

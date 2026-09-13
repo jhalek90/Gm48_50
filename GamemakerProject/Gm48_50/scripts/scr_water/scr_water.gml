@@ -23,6 +23,9 @@ function water_init() {
 		far:      shader_get_uniform(shd_water, "u_far"),
 		near:     shader_get_uniform(shd_water, "u_near"),
 		glint:    shader_get_uniform(shd_water, "u_glint"),
+		sun:      shader_get_uniform(shd_water, "u_sun"),
+		sun_col:  shader_get_uniform(shd_water, "u_sun_col"),
+		sparkle:  shader_get_uniform(shd_water, "u_sparkle"),
 		pixel:    shader_get_uniform(shd_water, "u_pixel"),
 		levels:   shader_get_uniform(shd_water, "u_levels"),
 		scale:    shader_get_uniform(shd_water, "u_scale"),
@@ -106,6 +109,20 @@ function water_draw(_y1, _y2) {
 	shader_set_uniform_f_array(_u.far,   colour_vec3(global.pal.water));
 	shader_set_uniform_f_array(_u.near,  colour_vec3(global.pal.water_near));
 	shader_set_uniform_f_array(_u.glint, colour_vec3(global.pal.sky_warm));
+
+	// The glitter path, under whichever body is currently lighting the scene.
+	// sky_light already resolves that — it hands back the sun or the moon,
+	// whichever is actually up — so the lake sparkles under the moon at night
+	// without a second set of numbers or a second code path.
+	//
+	// The colour is blended between the two by how visible the sun is, so the
+	// handover at dusk is a warm glitter cooling into a silver one rather than
+	// a frame where it changes.
+	var _l = global.light;
+	shader_set_uniform_f_array(_u.sun, [_l.x, _l.strength]);
+	shader_set_uniform_f_array(_u.sun_col,
+		colour_vec3(merge_colour(global.pal.moon, global.pal.sun, _l.sun_vis)));
+	shader_set_uniform_f(_u.sparkle, gmlmcp_tunable("water_sparkle", 0.85));
 
 	shader_set_uniform_f(_u.pixel,   max(1, gmlmcp_tunable("water_pixel",   4)));
 	shader_set_uniform_f(_u.levels,  max(2, gmlmcp_tunable("water_levels",  5)));

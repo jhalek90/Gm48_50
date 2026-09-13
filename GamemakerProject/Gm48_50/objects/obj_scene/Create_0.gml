@@ -16,6 +16,13 @@ grass_init();
 // The stand of trees, as a table of positions rather than as instances.
 trees_init();
 
+// And the rocks, the same way.
+rocks_init();
+
+// The few flowers in the bank grass. The dock needs no init — it is derived
+// entirely from its macros and the live projection.
+flowers_init();
+
 // The birds, the duck and the fireflies. Initialised here because two of the
 // three are drawn from this object's Draw event, between the layers they
 // belong between — see scr_wildlife.

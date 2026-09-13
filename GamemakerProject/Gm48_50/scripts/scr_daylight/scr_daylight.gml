@@ -179,6 +179,25 @@ function daylight_apply() {
 	}
 }
 
+/// A colour with the day's light falling on it.
+///
+/// Multiplied, not blended. The trees already do exactly this by handing
+/// pal.light to draw_sprite_ext as a tint; this is the same operation for
+/// anything drawn as rectangles, and it has to be the same or those things
+/// will be the ones in the scene lit by a different sun.
+///
+/// The distinction is not academic. pal.light runs from (70,80,120) at night
+/// to (255,255,250) at noon, so multiplying leaves a thing alone in daylight
+/// and sinks it at night — which is what light does. Blending *toward* it
+/// instead washes dark things pale at noon.
+function pal_lit(_c) {
+	var _l = global.pal.light;
+	return make_colour_rgb(
+		colour_get_red(_c)   * colour_get_red(_l)   / 255,
+		colour_get_green(_c) * colour_get_green(_l) / 255,
+		colour_get_blue(_c)  * colour_get_blue(_l)  / 255);
+}
+
 /// One colour from the table at an arbitrary time.
 ///
 /// Deliberately does not touch `global.pal`: this answers "what would the sky

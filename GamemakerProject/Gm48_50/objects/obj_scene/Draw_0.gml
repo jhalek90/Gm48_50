@@ -35,6 +35,11 @@ water_reflect(spr_mountains, 0, _h,
 	merge_colour(global.pal.shore, global.pal.water, 0.55),
 	gmlmcp_tunable("reflect_alpha", 0.45));
 
+// The rocks standing in the shallows. Before the duck rather than after,
+// because all of them sit further out than it does — depth order is the whole
+// of the sorting here, and a rock drawn over the bird would put it underwater.
+rocks_draw(true);
+
 // The duck, on the lake: after the water and the reflections cast into it, and
 // before the bank and the trees, so it floats on the surface and passes behind
 // a trunk rather than across it.
@@ -45,6 +50,24 @@ duck_draw();
 // standing up out of it. They are allowed to reach above the waterline, which
 // is what makes the bank meet the lake as a ragged edge rather than a ruled one.
 grass_draw(BANK_Z);
+
+// The dock. After the grass, because its near end runs up onto the bank and
+// the grass would otherwise be painted straight over it — and after the duck,
+// so that where the two cross the duck passes behind, which is what a duck
+// near a jetty does.
+//
+// Before the bank rocks, the flowers and the trees: every one of those stands
+// nearer than the dock's near end, so they are in front of it.
+dock_draw();
+
+// The rocks on the bank, after the grass so they sit in it rather than behind
+// it. Only ever seen through the gaps between the balusters, which is the only
+// way the bank is seen at all.
+rocks_draw(false);
+
+// The flowers in that grass, after the rocks so a blossom is never buried by
+// a stone sitting further back than it.
+flowers_draw();
 
 // What the stand throws on the bank, before the stand itself.
 trees_shadows();

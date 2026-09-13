@@ -50,6 +50,23 @@ function aerial_fade(_z, _max) {
 	return clamp((_z - RAIL_Z) / 2.5, 0, _max);
 }
 
+/// How far into the air something well beyond the near scene has receded.
+///
+/// The second haze curve, and it needs justifying, because one shared curve is
+/// the whole point of aerial_fade. That one is calibrated for the near scene —
+/// the ledges, the bank, the trees — and saturates at about z 3.4. Everything
+/// out past that is at its maximum: the birds in the sky, the rocks standing
+/// in the lake. Handed the shared curve they all came back at one identical
+/// washed-out tone with no depth between them at all, and the rocks came back
+/// the same colour as the water they were standing in.
+///
+/// So this is the same idea over the range the far scene actually uses. It is
+/// driven by apparent size rather than raw depth, which is what keeps it
+/// resolving all the way out to z_far instead of flattening.
+function far_haze(_z, _max) {
+	return clamp(1 - persp_scale(_z) * 2.0, 0, _max);
+}
+
 /// Apparent size of anything at depth z. 1.0 at the railing, smaller beyond.
 function persp_scale(_z) {
 	return global.persp_z_near / _z;

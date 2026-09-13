@@ -66,37 +66,6 @@ function wildlife_night() {
 	return 1 - wildlife_day();
 }
 
-/// A colour with the scene's light falling on it.
-///
-/// Multiplied, not blended. The trees already do exactly this by handing
-/// pal.light to draw_sprite_ext as a tint; this is the same operation for
-/// something drawn as rectangles, and it has to be the same or the wildlife
-/// will be the one set of things in the scene lit by a different sun.
-///
-/// The distinction is not academic. pal.light runs from (70,80,120) at night
-/// to (255,255,250) at noon, so multiplying leaves a thing alone in daylight
-/// and sinks it at night — which is what light does. Blending *toward* it
-/// instead washes dark things pale at noon, and that is what turned the duck
-/// into a gull on the first attempt.
-function wildlife_lit(_c) {
-	var _l = global.pal.light;
-	return make_colour_rgb(
-		colour_get_red(_c)   * colour_get_red(_l)   / 255,
-		colour_get_green(_c) * colour_get_green(_l) / 255,
-		colour_get_blue(_c)  * colour_get_blue(_l)  / 255);
-}
-
-/// How far into the air a thing at depth z has receded.
-///
-/// Not aerial_fade, which is the shared curve for the near scene and saturates
-/// at about z 3.5 — every bird in the sky sits well beyond that, so the shared
-/// curve returned its maximum for all of them and the whole flock came out at
-/// one washed-out tone with no depth in it at all. This keeps a gradient
-/// across the range the sky actually uses.
-function wildlife_haze(_z, _max) {
-	return clamp(1 - persp_scale(_z) * 2.0, 0, _max);
-}
-
 // --- Birds ---------------------------------------------------------------
 //
 // Placed by depth like everything else, so one number gives a bird its size,
@@ -166,8 +135,8 @@ function birds_draw() {
 		var _s  = 46 * persp_scale(_b.z) * 0.5;
 		var _f  = sin(global.wildlife_t * _b.rate + _b.phase);
 
-		var _hz = wildlife_haze(_b.z, 0.55);
-		var _c  = merge_colour(wildlife_lit(make_colour_rgb(26, 28, 36)),
+		var _hz = far_haze(_b.z, 0.55);
+		var _c  = merge_colour(pal_lit(make_colour_rgb(26, 28, 36)),
 			global.pal.sky_mid, _hz);
 
 		draw_set_colour(_c);
@@ -250,10 +219,10 @@ function duck_draw() {
 	var _x = floor(_d.x / _px) * _px;
 	_y = floor(_y / _px) * _px;
 
-	var _hz   = wildlife_haze(_d.z, 0.30);
-	var _body = merge_colour(wildlife_lit(make_colour_rgb(104, 76, 52)),
+	var _hz   = far_haze(_d.z, 0.30);
+	var _body = merge_colour(pal_lit(make_colour_rgb(104, 76, 52)),
 		global.pal.water, _hz);
-	var _head = merge_colour(wildlife_lit(make_colour_rgb(40, 52, 46)),
+	var _head = merge_colour(pal_lit(make_colour_rgb(40, 52, 46)),
 		global.pal.water, _hz);
 
 	var _w = max(_px * 3, round(46 * _s / _px) * _px);   // body length

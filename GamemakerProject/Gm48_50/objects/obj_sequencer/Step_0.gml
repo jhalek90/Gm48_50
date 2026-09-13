@@ -74,6 +74,7 @@ if (game_playing()) {
 				// note and a played note are the same event seen from two places.
 				flash[_cell.track][_cell.step] = 1;
 				seq_throw_note(_cell.track, _cell.step, _semi);
+				seq_splash(_cell.track, _cell.step, sprSplatter);
 			}
 		}
 		if (mouse_check_button_pressed(mb_right) && _row[_cell.step] != -1) {
@@ -108,7 +109,13 @@ while (acc >= _secs) {
 	if (playhead == 0) global.seq_bar++;
 
 	for (var _t = 0; _t < SEQ_TRACKS; _t++) {
+		// Marked whether or not anything is standing here. An empty step still
+		// gets a splash, because that is the only thing telling the player
+		// where the beat is before they have put anything on it — but a
+		// quieter one, so a full board still reads as busier than a bare one.
 		var _ins = slots[_t][playhead];
+		seq_splash(_t, playhead, (_ins < 0) ? sprSplashSmall : sprSplatter);
+
 		if (_ins < 0) continue;
 
 		// Read once and handed to both: the sound and the note drawn above it

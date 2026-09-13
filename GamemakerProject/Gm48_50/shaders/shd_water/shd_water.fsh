@@ -28,6 +28,13 @@ uniform vec3 u_far;
 uniform vec3 u_near;
 uniform vec3 u_glint;
 
+// The body lighting the lake, in room space: x is the column it stands in,
+// y is how strongly it is shining. Handed over from sky_light, so the glitter
+// is under the same sun the porch and the clouds are.
+uniform vec2 u_sun;
+uniform vec3 u_sun_col;
+uniform float u_sparkle;
+
 uniform float u_pixel;   // block size in screen pixels
 uniform float u_levels;  // posterisation bands
 uniform float u_scale;   // wave size
@@ -125,6 +132,35 @@ void main()
 	// night, with no second set of numbers to keep in step by hand.
 	float crest = step(1.0 - 0.5 / (bands - 1.0), q);
 	col = mix(col, u_glint, crest * 0.38 * detail);
+
+	// --- The glitter path -------------------------------------------------
+	//
+	// The specks live in the wave plane, not on the screen, so they compress
+	// toward the horizon exactly as the waves do and belong to the same
+	// surface. Sampling them in screen space would have scattered the same
+	// sized sparkles evenly over the lake, which reads as snow on glass.
+	//
+	// They are thresholded rather than faded: a facet either happens to be
+	// turned toward the light or it does not, and a soft sparkle is a smear.
+	// That also suits the posterise, which is all hard edges anyway.
+	float spark = vnoise(w * 4.3 + vec2(0.0, u_time * 1.1));
+
+	// The path widens as it comes toward the viewer. A specular reflection off
+	// a receding plane is a wedge running from the light's column at the
+	// horizon down to the near shore, and dy is the distance from the horizon,
+	// so the width follows it for free.
+	float half_w = 26.0 + dy * 2.1;
+	float across = 1.0 - smoothstep(0.0, half_w, abs(sp.x - u_sun.x));
+
+	// Fading as the path nears the viewer as well. Directly below you the
+	// surface is turned the wrong way to send anything back, which is why a
+	// glitter path on real water thins out at your feet rather than spreading
+	// forever.
+	float reach = 1.0 - smoothstep(0.35, 1.0, g);
+
+	float glitter = step(0.72, spark) * across * reach * u_sun.y * u_sparkle;
+
+	col = mix(col, u_sun_col, clamp(glitter, 0.0, 1.0));
 
 	gl_FragColor = vec4(col, 1.0) * v_vColour;
 }

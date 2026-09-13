@@ -29,6 +29,17 @@
 #macro PICK_SIZE   62
 #macro PICK_Y      (room_height - 104)
 
+/// How far in front of the scene a strike effect is drawn.
+///
+/// In front of everything the game draws: the porch at -100, the objects at
+/// -120, the lantern at -140, the mixer at -150 and the day scrubber at -200.
+/// Only the title card at -300 is nearer, and that is never up while the
+/// playhead is running.
+#macro SEQ_VFX_DEPTH -250
+
+/// How big a strike effect is drawn, against its sprite.
+#macro SEQ_VFX_SCALE 2
+
 /// How many steps a loop has, and how they divide the beat.
 ///
 /// Eight eighth-notes, so a loop comes to exactly one bar of the music at
@@ -201,6 +212,41 @@ function dice_draw(_cx, _cy, _size, _face, _colour, _pip, _alpha) {
 		var _py = _cy + _list[_i][1] * _off;
 		draw_rectangle(_px - _r, _py - _r, _px + _r, _py + _r, false);
 	}
+}
+
+/// The splash the playhead leaves where it landed.
+///
+/// Thrown on every step the playhead passes, whether or not anything is
+/// standing there. That is the point of it: the playhead is a pale bar behind
+/// the objects and easy to lose, and a board with two things on it said
+/// nothing at all about where the other six steps were. Marking the empty
+/// ones turns the beat into something you can see coming, so a player can
+/// place an object *on* time rather than discovering afterwards where the
+/// time was.
+///
+/// It is deliberately not tied to the note: a sounding slot also throws a
+/// coloured quaver, and keeping the two apart is what lets the splash say
+/// "here, now" while the note says "this pitch".
+///
+/// The sprite is the caller's, because the two cases want to look different.
+/// A step that struck something splatters; an empty one is only a marker, and
+/// wants to be quieter than the thing it is hinting at — if the hint were as
+/// loud as the hit, a bare board would look as busy as a full one and the
+/// marker would stop being information.
+///
+/// objVfxFnf destroys itself when its animation ends, so this creates and
+/// forgets — nothing holds a reference or counts them.
+function seq_splash(_t, _i, _sprite) {
+	var _k = global.tracks[_t];
+
+	var _fx = instance_create_depth(track_slot_x(_t, _i), _k.y, SEQ_VFX_DEPTH, objVfxFnf);
+	_fx.sprite_index = _sprite;
+
+	// Scaled from here rather than by giving objVfxFnf a Create event, so the
+	// object stays exactly as it was authored and the sequencer owns how big
+	// its own playhead marker is.
+	_fx.image_xscale = SEQ_VFX_SCALE;
+	_fx.image_yscale = SEQ_VFX_SCALE;
 }
 
 /// Throw the note a slot is sounding up off the object standing in it.

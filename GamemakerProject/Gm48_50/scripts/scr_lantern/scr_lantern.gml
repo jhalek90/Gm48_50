@@ -33,6 +33,10 @@
 /// The block the lantern is drawn on, matching the scene's posterise grid.
 #macro LANTERN_BLOCK   4
 
+/// When it lights itself, and when it puts itself out.
+#macro LANTERN_ON_HOUR   18
+#macro LANTERN_OFF_HOUR   5
+
 function lantern_init() {
 	global.lantern_on = false;
 
@@ -48,6 +52,68 @@ function lantern_init() {
 	// momentum a gust gives it.
 	global.lantern_ang = 0;
 	global.lantern_vel = 0;
+
+	// The hour last seen, for the crossing test below. Undefined rather than a
+	// number, because obj_lantern's Create may run before obj_daylight's and
+	// there may be no clock to read yet — the first step settles it.
+	global.lantern_hour = undefined;
+}
+
+/// Should a lantern be lit at this hour?
+function lantern_wants_on(_h) {
+	return (_h >= LANTERN_ON_HOUR || _h < LANTERN_OFF_HOUR);
+}
+
+/// Light it at dusk and put it out at dawn, without taking it off the player.
+///
+/// The obvious version of this — set the state from the hour every step — is
+/// wrong, and quietly so: it would hold the switch down. A player who turned
+/// the lantern off at 9pm would see it come straight back on the next frame
+/// and conclude the thing was broken.
+///
+/// So this is edge triggered. It acts only in the frame the clock *crosses*
+/// one of the two hours, and between crossings the lantern is entirely the
+/// player's. Turn it off at 9pm and it stays off until 5am puts it out again
+/// — which it already is — and 6pm the next evening lights it.
+///
+/// The exception is a scrub. The day scrubber can move the clock hours in one
+/// frame, and stepping over a crossing in a single jump would either miss it
+/// or, going backwards, trigger both. Any jump bigger than an hour is treated
+/// as a scrub and the lantern is simply snapped to suit the hour it landed on.
+function lantern_auto() {
+	var _h = sky_hour();
+
+	// First frame, or straight after a scrub: settle rather than edge trigger.
+	if (is_undefined(global.lantern_hour)) {
+		global.lantern_hour = _h;
+		global.lantern_on   = lantern_wants_on(_h);
+		global.lantern_lit  = global.lantern_on ? 1 : 0;
+		return;
+	}
+
+	var _prev = global.lantern_hour;
+	global.lantern_hour = _h;
+
+	// How far the clock moved, forward, around a 24 hour circle.
+	var _moved = (_h - _prev + 24) mod 24;
+
+	if (_moved > 1) {
+		global.lantern_on = lantern_wants_on(_h);
+		return;
+	}
+
+	if (hour_crossed(_prev, _moved, LANTERN_ON_HOUR))  global.lantern_on = true;
+	if (hour_crossed(_prev, _moved, LANTERN_OFF_HOUR)) global.lantern_on = false;
+}
+
+/// Did a step of `_moved` hours starting at `_prev` pass `_mark`?
+///
+/// Distances are measured forward around the circle so midnight is not a
+/// special case: the step from 23:50 to 00:10 is twenty minutes like any
+/// other, and a mark at 05:00 is simply not within it.
+function hour_crossed(_prev, _moved, _mark) {
+	var _to_mark = (_mark - _prev + 24) mod 24;
+	return (_to_mark > 0 && _to_mark <= _moved);
 }
 
 /// Screen y of the top of the glass.
@@ -77,6 +143,8 @@ function lantern_toggle() {
 
 function lantern_step() {
 	global.lantern_t += delta_time / 1000000;
+
+	lantern_auto();
 
 	// Framerate-independent approach to the target, so the flame catches at the
 	// same rate whatever the frame is doing — the same reason every other clock
