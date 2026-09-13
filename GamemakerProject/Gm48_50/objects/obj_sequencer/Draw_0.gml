@@ -128,9 +128,20 @@ for (var _p = 0; _p < instrument_count(); _p++) {
 	draw_text(_bx + 4, _by + 1, string(_p + 1));
 	draw_set_halign(fa_center);
 
+	// Above the button rather than below it.
+	//
+	// The help line went under the row, and under the row is where these were.
+	// There is no third place: the buttons end 42 pixels off the bottom of the
+	// screen and two lines of text do not fit in that, and the row cannot move
+	// up because the deck edge is at 660 and it would straddle it.
+	//
+	// A label above a button is as clearly its label as one below, so the swap
+	// costs nothing — the help line is the one of the two that has to be read
+	// left to right as a sentence, and the bottom of the screen is where a
+	// sentence belongs.
 	draw_set_colour(UI_INK);
 	draw_set_alpha(_on ? 0.95 : 0.5);
-	draw_text(_cx, _by + _bw + 5, _pd.name);
+	draw_text(_cx, _by - 22, _pd.name);
 }
 
 // The randomiser, on the end of the same row and in the same box, because it
@@ -154,15 +165,22 @@ draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, true);
 
 draw_set_colour(UI_INK);
 draw_set_alpha(_dhot ? 0.95 : 0.5);
-draw_text(_dcx, _by + _bw + 5, "Roll");
+draw_text(_dcx, _by - 22, "Roll");
 
-// The help line, centred on the row it describes rather than pinned to the left
-// margin the row used to start at. Left where it was it would be the one piece
-// of the bottom interface still hugging a corner, and would read as a caption
-// for the porch instead of for the buttons underneath it.
+// The help line, under the row it describes and centred on it.
+//
+// Under, because it is a list of things you can do and it reads as one line of
+// prose — putting it above the buttons made it the first thing the eye met on
+// the way down to them, which is backwards for something you consult rather
+// than read. Centred rather than pinned to a margin, or it would be the one
+// piece of the bottom interface still hugging a corner.
+//
+// T is in it now. It was advertised on the day scrubber's help line and that
+// went with the bar, which left the key that hides the interface as the only
+// control in the game nothing mentioned.
 draw_set_colour(UI_INK);
 draw_set_alpha(0.7);
-draw_text(_px + pick_width() * 0.5, _by - 26,
-	"1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear");
+draw_text(_px + pick_width() * 0.5, _by + _bw + 8,
+	"1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear   T hide UI");
 draw_set_alpha(1);
 draw_set_halign(fa_left);
