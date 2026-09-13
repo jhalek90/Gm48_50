@@ -35,3 +35,4 @@ u_ray_density = shader_get_uniform(shd_post, "u_ray_density");
 u_ray_decay   = shader_get_uniform(shd_post, "u_ray_decay");
 u_ray_weight  = shader_get_uniform(shd_post, "u_ray_weight");
 u_ray_thresh  = shader_get_uniform(shd_post, "u_ray_thresh");
+u_ray_floor   = shader_get_uniform(shd_post, "u_ray_floor");

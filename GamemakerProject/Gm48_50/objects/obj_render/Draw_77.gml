@@ -42,6 +42,16 @@ shader_set_uniform_f(u_ray_weight,  gmlmcp_tunable("ray_weight",  0.90));
 // about 0.83 luminance at the brightest hour, which is where this is set.
 shader_set_uniform_f(u_ray_thresh,  gmlmcp_tunable("ray_thresh",  0.83));
 
+// And where the sky stops. In texture coordinates, because this pass works on
+// the surface rather than in room space — the same reason the light position
+// is handed over that way.
+//
+// Defaulted to the horizon itself, which is the line the scene is built around.
+// Push it down to let the lake glitter throw shafts again; push it up to keep
+// even the far bank out of the effect.
+shader_set_uniform_f(u_ray_floor,
+	gmlmcp_tunable("ray_floor", global.persp_horizon / room_height));
+
 var _at = application_get_position();
 
 // The bars either side. Cleared every frame because nothing else draws there,

@@ -33,12 +33,29 @@ uniform float u_ray_density; // how far along the ray the samples reach
 uniform float u_ray_decay;   // falloff per step
 uniform float u_ray_weight;
 uniform float u_ray_thresh;  // luminance above which a pixel counts as sky
+uniform float u_ray_floor;   // texture y below which nothing is sky at all
 
 const int RAY_STEPS = 24;
 
 // What a pixel contributes as a light source.
+//
+// Two tests, not one, and the second is the more honest of them.
+//
+// Luminance alone was the whole rule, and it cannot be: it asks "is this
+// bright" when the question is "is this sky". Those agree across the top of
+// the frame and stop agreeing below the horizon, where every bright pixel —
+// glitter on the lake, a white word on the deck — is a lit surface rather
+// than a gap the light comes through. A label at the bottom of the screen
+// then threw a legible copy of itself up the deck toward the sun.
+//
+// So: nothing below the horizon emits. Not a tuned threshold but a fact about
+// the scene — the sky is the part above the horizon, the lake and the porch
+// are the parts in front of it, and an occluder cannot also be a light source.
+// It is also the test the luminance threshold was standing in for all along.
 vec3 emitter(vec2 uv)
 {
+	if (uv.y > u_ray_floor) return vec3(0.0);
+
 	vec3 s = texture2D(gm_BaseTexture, uv).rgb;
 	float l = dot(s, vec3(0.2126, 0.7152, 0.0722));
 	return s * smoothstep(u_ray_thresh, u_ray_thresh + 0.14, l);

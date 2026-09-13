@@ -139,8 +139,25 @@ for (var _p = 0; _p < instrument_count(); _p++) {
 	// costs nothing — the help line is the one of the two that has to be read
 	// left to right as a sentence, and the bottom of the screen is where a
 	// sentence belongs.
-	draw_set_colour(UI_INK);
-	draw_set_alpha(_on ? 0.95 : 0.5);
+	// Solid white, always, and the same whether this one is held or not.
+	//
+	// These were UI_INK at half alpha unless selected, which is a fine way to
+	// show state and a poor way to show a word: eight of the nine names were
+	// permanently half faded over moving grass, and the one you had already
+	// chosen was the only one you could read. Which instrument is held is
+	// already said three times over by the button — its fill, its border and
+	// the object inside it — so the label does not have to say it a fourth
+	// time at the cost of being legible.
+	//
+	// Shadowed rather than merely bright. This sits over grass that is a
+	// different colour every hour and never still, and no single tone of text
+	// is legible against all of it.
+	draw_set_colour(c_black);
+	draw_set_alpha(0.6);
+	draw_text(_cx + 2, _by - 20, _pd.name);
+
+	draw_set_colour(c_white);
+	draw_set_alpha(1);
 	draw_text(_cx, _by - 22, _pd.name);
 }
 
@@ -163,8 +180,12 @@ draw_set_colour(_dhot ? UI_INK : c_black);
 draw_set_alpha(_dhot ? 0.7 : 0.55);
 draw_rectangle(_dx, _by, _dx + _bw, _by + _bw, true);
 
-draw_set_colour(UI_INK);
-draw_set_alpha(_dhot ? 0.95 : 0.5);
+draw_set_colour(c_black);
+draw_set_alpha(0.6);
+draw_text(_dcx + 2, _by - 20, "Roll");
+
+draw_set_colour(c_white);
+draw_set_alpha(1);
 draw_text(_dcx, _by - 22, "Roll");
 
 // The help line, under the row it describes and centred on it.
@@ -178,9 +199,21 @@ draw_text(_dcx, _by - 22, "Roll");
 // T is in it now. It was advertised on the day scrubber's help line and that
 // went with the bar, which left the key that hides the interface as the only
 // control in the game nothing mentioned.
-draw_set_colour(UI_INK);
-draw_set_alpha(0.7);
-draw_text(_px + pick_width() * 0.5, _by + _bw + 8,
-	"1-" + string(instrument_count()) + " pick   LMB place, click again to tune   RMB remove   Backspace clear   T hide UI");
+//
+// Solid white and shadowed, for the same reason the names are: it lies across
+// the rug, which is the busiest thing on the deck, and at the alpha it used to
+// carry it was a grey suggestion of a sentence.
+var _help = "1-" + string(instrument_count()) +
+	" pick   LMB place, click again to tune   RMB remove   Backspace clear   T hide UI";
+var _hx   = _px + pick_width() * 0.5;
+var _hy   = _by + _bw + 8;
+
+draw_set_colour(c_black);
+draw_set_alpha(0.6);
+draw_text(_hx + 2, _hy + 2, _help);
+
+draw_set_colour(c_white);
 draw_set_alpha(1);
+draw_text(_hx, _hy, _help);
+
 draw_set_halign(fa_left);
